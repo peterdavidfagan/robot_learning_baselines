@@ -3,3 +3,5 @@
 
 # robot_learning_baselines
 A set of baseline models with supporting training/evaluation scripts for various robot learning dataset. 
+
+<img src="./assets/robot_learning.jpeg" height=300/>
