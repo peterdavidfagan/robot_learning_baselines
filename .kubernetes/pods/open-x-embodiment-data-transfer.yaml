@@ -18,7 +18,7 @@ spec:
           cpu: 12
           memory: 32Gi
       command: ["/bin/bash"]
-      args: ["-c", "python ./robot_learning_baselines/data_loaders/open-x-embodiment.py --data_transfer=True"]
+      args: ["-c", "source .venv/bin/activate && python ./robot_learning_baselines/data_loaders/open-x-embodiment.py --data_transfer=True --data_dir=/app/data/open-x-embodiment"]
       volumeMounts:
         - mountPath: "/app/data"
           name: s2456316-open-x-embodiment
