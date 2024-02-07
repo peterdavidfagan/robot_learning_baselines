@@ -12,9 +12,14 @@ spec:
   restartPolicy: Never
   containers:
     - name: s2456316-open-x-embodiment-data-transfer
-      image: ghcr.io/peterdavidfagan/open-x-embodiment
+      image: ghcr.io/peterdavidfagan/open_x_embodiment_data_transfer
+      resources:
+        limits:
+          cpu: 12
+          memory: 32Gi
       command: ["/bin/bash"]
       args: ["-c", "python ./robot_learning_baselines/data_loaders/open-x-embodiment.py --data_transfer=True"]
       volumeMounts:
         - mountPath: "/app/data"
           name: s2456316-open-x-embodiment
+
