@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: s2456316-visual-concept-planner
+spec:
+  volumes:
+    - name: s2456316-visual-concept-planner-data
+      persistentVolumeClaim:
+        claimName: s2456316-visual-concept-planner-data
+    - name: s2456316-gcp-config
+      configMap:
+        name: s2456316-gcp-config
+  imagePullSecrets:
+    - name: s2456316-ghcr-secret
+  restartPolicy: Never
+  containers:
+    - name: vcp-traincontainer
+      image: ghcr.io/peterdavidfagan/vcp_traincontainer:latest
+      command: ["/bin/bash"]
+      args: ["-c", "sleep 3600"]
+      env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /app/.config/gcloud/application_default_credentials.json
+          - name: GOOGLE_CLOUD_PROJECT
+            value: visual-concept-planner
+      volumeMounts:
+        - mountPath: "/app/data"
+          name: s2456316-visual-concept-planner-data
