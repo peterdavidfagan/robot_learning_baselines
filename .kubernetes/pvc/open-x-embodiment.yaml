@@ -7,4 +7,4 @@ spec:
     - ReadWrite
   resources:
     requests:
-      storage: 10TB
+      storage: 10Ti
