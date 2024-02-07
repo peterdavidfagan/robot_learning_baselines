@@ -7,6 +7,7 @@ adapted from: https://github.com/google-deepmind/open_x_embodiment/blob/main/col
 import os
 import tqdm
 import subprocess
+import argparse
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -86,6 +87,8 @@ def download_datasets(datasets, data_dir):
     os.makedirs(local_dataset_dir, exist_ok=True)
     subprocess.run(['gsutil', '-m', 'cp', '-r', f'gs://gresearch/robotics/{dataset_version}/', local_dataset_dir], check=True)
 
+
+# dataloader is incomplete only used for debugging for now
 def create_dataloader():
     """Convert RLDS datasets to format for training RT-X models."""
     # RLDS utility functions
@@ -123,22 +126,28 @@ def create_dataloader():
     return dataset
 
 
-
-
-
 if __name__=="__main__":
-    
-    # some configuration
-    TEST_DATASETS = ['bc_z']
-    LOCAL_MOUNT = '/mnt/hdd/openx_datasets'
+    parser = argparse.ArgumentParser(description='RLDS dataset loader')
+    parser.add_argument("debug", type=bool, help="whether to run in debug mode or not", default=True)
+    parser.add_argument("data_transfer", type=bool, help="whether to download the datasets or not", default=False)
+    args = parse_args()
 
-    # try to download the datasets
-    #download_datasets(TEST_DATASETS, LOCAL_MOUNT)
+    if args.data_transfer:
+        DATASETS = ['bc_z'] 
+        LOCAL_MOUNT = '/app/openx_datasets'
+        download_datasets(DATASETS, LOCAL_MOUNT)
+    else:
+        # local config
+        TEST_DATASETS = ['bc_z']
+        LOCAL_MOUNT = '/mnt/hdd/openx_datasets'
 
-    # try loading a dataset
-    dataset = create_dataloader()
+        # try to download the datasets
+        #download_datasets(TEST_DATASETS, LOCAL_MOUNT)
+
+        # try loading a dataset
+        dataset = create_dataloader()
     
-    # inspect the dataset
-    for batch in dataset:
-        print(batch)
-        break
+        # inspect the dataset
+        for batch in dataset:
+            print(batch)
+            break

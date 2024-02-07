@@ -49,6 +49,7 @@ einops = "^0.7.0"
 tqdm = "^4.66.1"
 onnx = "^1.15.0"
 jaxonnxruntime = "^0.3.0"
+argparse = "^1.4.0"
 
 [tool.black]
 line-length = 120
