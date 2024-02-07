@@ -1,6 +1,6 @@
 version: "3"
 services:
-  jax:
+  test-build:
     image: ghcr.io/peterdavidfagan/open_x_embodiment_data_transfer
     build:
       context: ../../
