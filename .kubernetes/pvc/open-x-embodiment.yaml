@@ -4,7 +4,7 @@ metadata:
   name: s2456316-open-x-embodiment
 spec:
   accessModes:
-    - ReadWrite
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Ti
