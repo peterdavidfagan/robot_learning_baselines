@@ -1,0 +1,8 @@
+version: "3"
+services:
+  jax:
+    image: ghcr.io/peterdavidfagan/open_x_embodiment_data_transfer
+    build:
+      context: ../../
+      dockerfile: .docker/data_transfer/Dockerfile.data_transfer
+    command: python /app/robot_learning_baselines/data_loaders/open-x-embodiment.py --data-transfer=True
