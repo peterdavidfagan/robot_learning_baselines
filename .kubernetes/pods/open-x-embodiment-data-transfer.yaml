@@ -41,6 +41,6 @@ spec:
             readOnly: true
         securityContext:
           runAsUser: 65533
-    securityContext:
-      fsGroup: 65533
+  securityContext:
+    fsGroup: 65533
 
