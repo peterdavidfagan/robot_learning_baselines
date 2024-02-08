@@ -18,8 +18,29 @@ spec:
           cpu: 12
           memory: 32Gi
       command: ["/bin/bash"]
-      args: ["-c", "source .venv/bin/activate && python ./robot_learning_baselines/data_loaders/open-x-embodiment.py --data_transfer=True --data_dir=/app/data/open-x-embodiment"]
+      args: ["-c", "source .venv/bin/activate && python /app/code_refresh/robot_learning_baselines.git/robot_learning_baselines/data_loaders/open-x-embodiment.py --data_transfer=True --data_dir=/app/data/open-x-embodiment"]
       volumeMounts:
-        - mountPath: "/app/data"
-          name: s2456316-open-x-embodiment
+        - name: robot-baseline-code
+          mountPath: "/app/code_refresh"
+        - name: s2456316-open-x-embodiment
+          mountPath: "/app/data"
+  initContainers:
+      - name: git-sync
+        image: registry.k8s.io/git-sync/git-sync:v4.0.0
+        args:
+          - --repo=git@github.com:peterdavidfagan/robot_learning_baselines.git
+          - --root=/app
+          - --ssh=true
+          - --ssh-known-hosts=false
+          - --one-time=true
+        volumeMounts:
+          - name: robot-baseline-code
+            mountPath: "/app"
+          - name: s2456316-git-ssh
+            mountPath: "/etc/git-secret"
+            readOnly: true
+        securityContext:
+          runAsUser: 65533
+    securityContext:
+      fsGroup: 65533
 
