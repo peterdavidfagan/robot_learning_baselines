@@ -128,9 +128,17 @@ def create_dataloader():
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='RLDS dataset loader')
-    parser.add_argument("data_transfer", type=bool, help="whether to download the datasets or not", default=False)
-    parser.add_argument("data_dir", type=str, help="local directory to store the datasets", default='/mnt/hdd/openx_datasets')
-    args = parse_args()
+    parser.add_argument(
+            "--data_transfer", 
+            type=bool, 
+            help="whether to download the datasets or not", 
+            default=False)
+    parser.add_argument(
+            "--data_dir", 
+            type=str, 
+            help="local directory to store the datasets", 
+            default='/mnt/hdd/openx_datasets')
+    args = parser.parse_args()
 
     if args.data_transfer:
         DATASETS = ['bc_z'] 
