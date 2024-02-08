@@ -141,7 +141,21 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     if args.data_transfer:
-        DATASETS = ['bc_z'] 
+
+        # for now we care about datasets with Franka Emika Panda robot and natural language instructions
+        df = pd.read_excel(
+            "./artifacts/open-x-embodiment.xlsx",
+            skiprows=14
+        )
+
+        # filter for franka + language annotations
+        df = df[
+            (df["Robot"]=="Franka") & 
+            (df["Language Annotations"].notna()) &
+            (df["# RGB Cams"] > 0)
+            ]
+
+        DATASETS = df["Registered Dataset Name"].to_list()
         LOCAL_MOUNT = args.data_dir
         download_datasets(DATASETS, LOCAL_MOUNT)
     else:
