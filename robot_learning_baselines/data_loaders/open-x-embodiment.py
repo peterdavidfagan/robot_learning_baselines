@@ -14,6 +14,13 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
+
+MISSING_DATASETS = [
+        "fractal20220817_data",
+        "furniture_bench_dataset_converted_externally_to_rlds",
+        "cmu_playing_with_food",
+    ]
+
 def dataset2version(dataset_name):
   if dataset_name == 'robo_net':
     version = '1.0.0'
@@ -103,6 +110,7 @@ if __name__=="__main__":
             ]
 
         DATASETS = df["Registered Dataset Name"].to_list()
+        DATASETS = [d for d in DATASETS if d not in MISSING_DATASETS]
         LOCAL_MOUNT = args.data_dir
         download_datasets(DATASETS, LOCAL_MOUNT)
     else:
