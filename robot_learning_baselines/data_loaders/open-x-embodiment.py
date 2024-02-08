@@ -5,6 +5,7 @@ adapted from: https://github.com/google-deepmind/open_x_embodiment/blob/main/col
 """
 
 import os
+import pathlib
 import tqdm
 import subprocess
 import argparse
@@ -87,8 +88,9 @@ if __name__=="__main__":
     if args.data_transfer:
 
         # for now we care about datasets with Franka Emika Panda robot and natural language instructions
+        path = pathlib.Path(__file__).parent.absolute()
         df = pd.read_excel(
-            "./artifacts/open-x-embodiment.xlsx",
+            "{path}/artifacts/open-x-embodiment.xlsx",
             skiprows=14
         )
 
