@@ -7,6 +7,12 @@ spec:
     - name: s2456316-open-x-embodiment
       persistentVolumeClaim:
         claimName: s2456316-open-x-embodiment
+    - name: robot-baseline-code
+      emptyDir: {}
+    - name: s2456316-git-ssh
+      secret:
+        secretName: s2456316-git-ssh
+        defaultMode: 0400
   imagePullSecrets:
     - name: s2456316-ghcr-secret
   restartPolicy: Never
