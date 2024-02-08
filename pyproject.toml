@@ -50,6 +50,8 @@ tqdm = "^4.66.1"
 onnx = "^1.15.0"
 jaxonnxruntime = "^0.3.0"
 argparse = "^1.4.0"
+pandas = "^2.2.0"
+openpyxl = "^3.1.2"
 
 [tool.black]
 line-length = 120

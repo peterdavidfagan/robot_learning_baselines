@@ -149,9 +149,6 @@ if __name__=="__main__":
         TEST_DATASETS = ['bc_z']
         LOCAL_MOUNT = '/mnt/hdd/openx_datasets'
 
-        # try to download the datasets
-        #download_datasets(TEST_DATASETS, LOCAL_MOUNT)
-
         # try loading a dataset
         dataset = create_dataloader()
     
