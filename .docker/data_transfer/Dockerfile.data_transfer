@@ -1,5 +1,5 @@
 # adapted from: https://bnikolic.co.uk/blog/python/2023/03/23/pyenvdocker.html
-FROM ubuntu:latest as compilesys
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:latest as compilesys
 
 WORKDIR /
 RUN apt-get update
