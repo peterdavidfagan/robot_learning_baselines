@@ -33,7 +33,7 @@ WORKDIR /app
 RUN mkdir -p .venv
 RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry config virtualenvs.in-project true --local && poetry install
 
-FROM ubuntu:latest as targetsys
+FROM gcr.io/google.com/cloudsdktool/google-cloud-cli:latest as targetsys
 
 COPY --from=compilesys /pyenv /pyenv
 COPY --from=compilesys /app /app
