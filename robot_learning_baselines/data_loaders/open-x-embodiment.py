@@ -32,41 +32,41 @@ def download_datasets(datasets, data_dir):
 
 
 # dataloader is incomplete only used for debugging for now
-def create_dataloader():
-    """Convert RLDS datasets to format for training RT-X models."""
+#def create_dataloader():
+#    """Convert RLDS datasets to format for training RT-X models."""
     # RLDS utility functions
-    def episode2steps(episode):
-        return episode['steps']
-    def step_map_fn(step):
-      return {
-          'observation': {
-              'natural_language_instruction': step['observation']['natural_language_instruction'],
-              'image': tf.image.resize(step['observation']['image'], (128, 128)),
-          },
-          'action': tf.concat([
-              step['action']['future/xyz_residual'],
-          ], axis=-1)
-      }
+#    def episode2steps(episode):
+#        return episode['steps']
+#    def step_map_fn(step):
+#      return {
+#          'observation': {
+#              'natural_language_instruction': step['observation']['natural_language_instruction'],
+#              'image': tf.image.resize(step['observation']['image'], (128, 128)),
+#          },
+#          'action': tf.concat([
+#              step['action']['future/xyz_residual'],
+#          ], axis=-1)
+#      }
 
     # load rlds dataset
-    dataset = tfds.load(
-        'bc_z:0.1.0', 
-        data_dir='/mnt/hdd/openx_datasets',
-        split='train[:10]'
-        )
+#    dataset = tfds.load(
+#        'bc_z:0.1.0', 
+#        data_dir='/mnt/hdd/openx_datasets',
+#        split='train[:10]'
+#        )
 
     # convert to steps
-    dataset = dataset.map(
-            episode2steps,
-            num_parallel_calls=tf.data.experimental.AUTOTUNE
-            ).flat_map(lambda x: x)
+#    dataset = dataset.map(
+#            episode2steps,
+#            num_parallel_calls=tf.data.experimental.AUTOTUNE
+#            ).flat_map(lambda x: x)
 
 
     # convert steps to required format
-    dataseet = dataset.map(step_map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    dataset = dataset.shuffle(1000).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
+#    dataset = dataset.map(step_map_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+#    dataset = dataset.shuffle(1000).batch(32).prefetch(tf.data.experimental.AUTOTUNE)
 
-    return dataset
+#    return dataset
 
 
 if __name__=="__main__":
