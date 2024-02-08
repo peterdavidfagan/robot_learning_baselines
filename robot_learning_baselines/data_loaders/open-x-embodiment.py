@@ -8,6 +8,7 @@ import os
 import tqdm
 import subprocess
 import argparse
+import pandas as pd
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -107,9 +108,9 @@ if __name__=="__main__":
         LOCAL_MOUNT = '/mnt/hdd/openx_datasets'
 
         # try loading a dataset
-        dataset = create_dataloader()
+        #dataset = create_dataloader()
     
         # inspect the dataset
-        for batch in dataset:
-            print(batch)
-            break
+        #for batch in dataset:
+        #    print(batch)
+        #    break
