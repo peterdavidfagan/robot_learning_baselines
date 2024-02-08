@@ -1,0 +1,15 @@
+train_parallel: ${training.parallel_training}
+preprocess: False
+action_embedding:
+  _target_: flax.linen.Embed
+  name: "action_embedding"
+  num_embeddings: 6 # padding, left, right, up, down, done
+  features: ${model.concept_learner.token_embedding_dim}
+  dtype: ${model.dtype}
+  param_dtype: ${model.param_dtype}
+  embedding_init:
+    _target_: flax.linen.initializers.variance_scaling
+    scale: 1.0
+    mode: "fan_in"
+    distribution: "normal"
+    dtype: ${model.dtype}
