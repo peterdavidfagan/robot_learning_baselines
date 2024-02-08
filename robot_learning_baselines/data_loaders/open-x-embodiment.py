@@ -98,7 +98,8 @@ if __name__=="__main__":
         df = df[
             (df["Robot"]=="Franka") & 
             (df["Language Annotations"].notna()) &
-            (df["# RGB Cams"] > 0)
+            (df["# RGB Cams"] > 0) &
+            (df["Registered Dataset Name"].notna())
             ]
 
         DATASETS = df["Registered Dataset Name"].to_list()
