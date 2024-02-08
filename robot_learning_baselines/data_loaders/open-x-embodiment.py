@@ -90,7 +90,7 @@ if __name__=="__main__":
         # for now we care about datasets with Franka Emika Panda robot and natural language instructions
         path = pathlib.Path(__file__).parent.absolute()
         df = pd.read_excel(
-            "{path}/artifacts/open-x-embodiment.xlsx",
+            f"{path}/artifacts/open-x-embodiment.xlsx",
             skiprows=14
         )
 
