@@ -1,26 +1,23 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: s2456316-vcp-train-meta-concept-learner
+  name: s2456316-open-x-embodiment-train-run
 spec:
   parallelism: 1
   template:
     metadata:
-      name: vcp-train-meta-concept-learner
+      name: s2456316-open-x-embodiment-train-run
       labels:
-        app: vcp-train-meta-concept-learner
+        app: s2456316-open-x-embodiment-train-run
     spec:
       nodeSelector:
         nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
       volumes:
-        - name: visual-concept-planner-code
-          emptyDir: {}
-        - name: s2456316-visual-concept-planner-data
+        - name: s2456316-open-x-embodiment
           persistentVolumeClaim:
-            claimName: s2456316-visual-concept-planner-data
-        - name: s2456316-gcp-config
-          configMap:
-            name: s2456316-gcp-config
+            claimName: s2456316-open-x-embodiment
+        - name: robot-baseline-code
+          emptyDir: {}
         - name: s2456316-git-ssh
           secret:
             secretName: s2456316-git-ssh
@@ -29,22 +26,17 @@ spec:
         - name: s2456316-ghcr-secret
       restartPolicy: OnFailure
       containers:
-        - name: vcp-traincontainer
-          image: ghcr.io/peterdavidfagan/vcp_traincontainer:latest
-          workingDir: /app/code_refresh/visual_concept_planner.git/visual_concept_planner
-          args: ["python", "/app/code_refresh/visual_concept_planner.git/visual_concept_planner/train_meta_concept_learner.py", "+move_puzzle=container_concept_learner_meta"]
+        - name: s2456316-open-x-embodiment-train-run
+          image: ghcr.io/peterdavidfagan/open-x-embodiment-train-run:latest
+          workingDir: /app/code_refresh/robot_learning_baselines.git/robot_learning_baselines
+          # TODO: add activation on python env 
+          args: ["python", "/app/code_refresh/robot_learning_baselines.git/robot_learning_baselines/train_meta_concept_learner.py", "+move_puzzle=container_concept_learner_meta"]
           env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /app/.config/gcloud/application_default_credentials.json
-          - name: GOOGLE_CLOUD_PROJECT
-            value: visual-concept-planner
           volumeMounts:
-            - name: visual-concept-planner-code
+            - name: robot-baseline-code
               mountPath: "/app/code_refresh"
-            - name: s2456316-visual-concept-planner-data
+            - name: s2456316-open-x-embodiment
               mountPath: "/app/data"
-            - name: s2456316-gcp-config
-              mountPath: "/app/.config/gcloud"
           resources:
             limits:
               nvidia.com/gpu: 1
@@ -52,13 +44,13 @@ spec:
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.0.0
           args:
-            - --repo=git@github.com:peterdavidfagan/visual_concept_planner.git
+            - --repo=git@github.com:peterdavidfagan/robot_learning_baselines.git
             - --root=/app
             - --ssh=true
             - --ssh-known-hosts=false
             - --one-time=true
           volumeMounts:
-            - name: visual-concept-planner-code
+            - name: robot-baseline-code
               mountPath: "/app"
             - name: s2456316-git-ssh
               mountPath: "/etc/git-secret"

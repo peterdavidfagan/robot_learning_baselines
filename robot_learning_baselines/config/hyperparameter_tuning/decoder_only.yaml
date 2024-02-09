@@ -1,0 +1,17 @@
+program: ../../train_transformer.py
+project: open_x_embodiment
+entity: ipab-rad
+name: sample_sweep
+method: grid
+metric:
+  goal: minimize
+  name: test_loss
+parameters:
+  model.multi_modal_transformer.attention_blocks.num_blocks:
+      values: [1, 2, 3]
+
+command:
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+
