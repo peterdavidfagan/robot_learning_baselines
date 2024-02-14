@@ -33,12 +33,10 @@ notebook = "^7.0.6"
 ipywidgets = "^8.1.1"
 jupyterlab = "^4.0.9"
 wandb = "^0.16.1"
+argparse = "^1.4.0"
+pandas = "^2.2.0"
+openpyxl = "^3.1.2"
 
-# linux only deps
-dm-reverb = {version="0.13.0", markers = "sys_platform == 'linux'"}
-tensorflow-cpu = {version="^2.14.0", markers = "sys_platform == 'linux'"}
-envlogger = {version="^1.1", extras=["tfds"], markers = "sys_platform == 'linux'"}
-rlds = {version="^0.1.7", markers = "sys_platform == 'linux'"}
 
 # Install jax and jaxlib with CUDA support last to prevent cuda version mismatches
 jax = "^0.4.23"
@@ -49,9 +47,16 @@ einops = "^0.7.0"
 tqdm = "^4.66.1"
 onnx = "^1.15.0"
 jaxonnxruntime = "^0.3.0"
-argparse = "^1.4.0"
-pandas = "^2.2.0"
-openpyxl = "^3.1.2"
+
+# linux-only deps
+dm-reverb = {version="0.13.0", markers = "sys_platform == 'linux'"}
+tensorflow-cpu = {version="^2.14.0", markers = "sys_platform == 'linux'"}
+envlogger = {version="^1.1", extras=["tfds"], markers = "sys_platform == 'linux'"}
+rlds = {version="^0.1.7", markers = "sys_platform == 'linux'"}
+
+# submodules
+multi_modal_transformers = {path="./robot_learning_baselines/model_architectures/multi_modal_transformers", develop=true}
+transporter_networks = {path="./robot_learning_baselines/model_architectures/transporter_networks", develop=true}
 
 [tool.black]
 line-length = 120

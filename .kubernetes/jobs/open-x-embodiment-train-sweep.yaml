@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: s2456316-visual-concept-planner-sweep
+spec:
+  parallelism: 3
+  completions: 3
+  template:
+    metadata:
+      name: vcp-train-executor
+      labels:
+        app: vcp-train-executor
+    spec:
+      nodeSelector:
+        nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
+      volumes:
+        - name: visual-concept-planner-code
+          emptyDir: {}
+        - name: s2456316-visual-concept-planner-data
+          persistentVolumeClaim:
+            claimName: s2456316-visual-concept-planner-data
+        - name: s2456316-gcp-config
+          configMap:
+            name: s2456316-gcp-config
+        - name: s2456316-git-ssh
+          secret:
+            secretName: s2456316-git-ssh
+            defaultMode: 0400
+      imagePullSecrets:
+        - name: s2456316-ghcr-secret
+      restartPolicy: OnFailure
+      containers:
+        - name: vcp-traincontainer
+          image: ghcr.io/peterdavidfagan/vcp_traincontainer:latest
+          workingDir: /app/code_refresh/visual_concept_planner.git/visual_concept_planner/hyper_parameter_tuning/move_puzzle
+          args: ["wandb", "agent", "ipab-rad/visual_concept_planner/ytulvvh3"]
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /app/.config/gcloud/application_default_credentials.json
+          - name: GOOGLE_CLOUD_PROJECT
+            value: visual-concept-planner
+          volumeMounts:
+            - name: visual-concept-planner-code
+              mountPath: "/app/code_refresh"
+            - name: s2456316-visual-concept-planner-data
+              mountPath: "/app/data"
+            - name: s2456316-gcp-config
+              mountPath: "/app/.config/gcloud"
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+      initContainers:
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync:v4.0.0
+          args:
+            - --repo=git@github.com:peterdavidfagan/visual_concept_planner.git
+            - --root=/app
+            - --ssh=true
+            - --ssh-known-hosts=false
+            - --one-time=true
+          volumeMounts:
+            - name: visual-concept-planner-code
+              mountPath: "/app"
+            - name: s2456316-git-ssh
+              mountPath: "/etc/git-secret"
+              readOnly: true
+          securityContext:
+            runAsUser: 65533
+      securityContext:
+        fsGroup: 65533
