@@ -1,0 +1,68 @@
+num_blocks: 1
+
+
+encoder_1d_block:
+  _target_: multi_modal_transformers.attention_blocks.attention.Encoder1DBlock
+  
+  layer_norm:
+    _target_: flax.linen.LayerNorm
+    epsilon: 1e-6
+    reduction_axes: [1]
+    feature_axes: [-1]
+    dtype:
+    param_dtype:
+  
+  dropout:
+    _target_: flax.linen.Dropout
+    rate: 0.1
+  
+  self_attention:
+    _target_: flax.linen.SelfAttention
+    num_heads: 3
+    qkv_features: 768
+    dropout_rate: 0.1
+    decode: false
+    kernel_init:
+      _target_: flax.linen.initializers.he_normal
+    use_bias: true
+    bias_init:
+      _target_: flax.linen.initializers.normal
+    dtype: float32
+    param_dtype: float32
+  
+  mlp_block:
+    _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+    dense:
+      _target_: flax.linen.Dense
+      features: 768
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+      use_bias: true
+      bias_init:
+        _target_: flax.linen.initializers.normal
+    
+    activation:
+      _partial_: true
+      _target_: flax.linen.relu
+    
+    norm:
+      _target_: flax.linen.Dropout
+      rate: 0.1
+    
+    dense_out:
+      _target_: flax.linen.Dense
+      features: 768
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+      use_bias: true
+      bias_init:
+        _target_: flax.linen.initializers.normal
+
+output_dense:
+    _target_: flax.linen.Dense
+    features: 5
+    kernel_init:
+      _target_: flax.linen.initializers.he_normal
+    use_bias: true
+    bias_init:
+      _target_: flax.linen.initializers.normal

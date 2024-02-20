@@ -1,0 +1,3 @@
+encoder:
+  _target_: multi_modal_transformers.tokenizers.text.t5_base.T5Tokenizer
+

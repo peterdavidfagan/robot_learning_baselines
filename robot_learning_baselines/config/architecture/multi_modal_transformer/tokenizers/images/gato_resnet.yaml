@@ -1,0 +1,104 @@
+encoder:
+  _target_: multi_modal_transformers.tokenizers.images.image_tokenizer.ImageTokenizer
+  image_size: [280, 280, 3]
+  patch_size: 56
+  normalize: True # normalizes the input image pixel values to range [-1, 1]
+  position_interval: 128 # number of discrete values for encoding patch positions
+  rng_collection: patch_encoding # pseudo-random number parameter name
+  embedding_dim: 768
+
+  # positional embedding layers
+
+  row_position_embedding:
+    _target_: flax.linen.Embed
+    name: "image_row_position_embedding"
+    num_embeddings: ${tokenizers.images.encoder.position_interval}
+    features: 768
+    dtype: ${dtype}
+    param_dtype: ${param_dtype}
+    embedding_init:
+      _target_: flax.linen.initializers.variance_scaling
+      scale: 1.0
+      mode: "fan_in"
+      distribution: "normal"
+      dtype: ${dtype}
+
+  col_position_embedding:
+    _target_: flax.linen.Embed
+    name: "image_col_position_embedding"
+    num_embeddings: ${tokenizers.images.encoder.position_interval}
+    features: 768
+    dtype: ${dtype}
+    param_dtype: ${param_dtype}
+    embedding_init:
+      _target_: flax.linen.initializers.variance_scaling
+      scale: 1.0
+      mode: "fan_in"
+      distribution: "normal"
+      dtype: ${dtype}
+
+  # input projection layer
+  resnet:
+    _target_: multi_modal_transformers.tokenizers.images.image_tokenizer.ResNetV2Block
+    num_blocks: 2
+    input_conv:
+      _target_: flax.linen.Conv
+      features: 64
+      kernel_size: [12, 12]
+      strides: [2, 2]
+      padding: VALID
+      use_bias: True
+      dtype: ${dtype}
+      param_dtype: ${param_dtype}
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+        dtype: ${param_dtype}
+      bias_init:
+        _target_: flax.linen.initializers.normal
+        dtype: ${param_dtype}
+
+    input_pool:
+      _partial_: true
+      _target_: flax.linen.max_pool
+      window_shape: [3,3]
+      strides: [1,1]
+      padding: VALID
+
+    # resnet blocks
+    resnet_norm:
+      _target_: flax.linen.GroupNorm
+      num_groups: 32
+      epsilon: 1e-6
+      dtype: ${dtype}
+      param_dtype: ${param_dtype}
+
+    resnet_activation:
+      _partial_: true
+      _target_: flax.linen.gelu
+
+    resnet_conv:
+      _target_: flax.linen.Conv
+      features: 64
+      kernel_size: [3,3]
+      strides: [1,1]
+      padding: SAME
+      use_bias: True
+      dtype: ${dtype}
+      param_dtype: ${param_dtype}
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+        dtype: ${param_dtype}
+      bias_init:
+        _target_: flax.linen.initializers.normal
+        dtype: ${param_dtype}
+
+    # output_layer
+    output_dense:
+      _target_: flax.linen.Dense
+      features: 768
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+        dtype: ${param_dtype}
+      bias_init:
+        _target_: flax.linen.initializers.normal
+        dtype: ${param_dtype}
