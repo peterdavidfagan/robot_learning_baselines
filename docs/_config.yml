@@ -1,9 +1,9 @@
-title: Toolkit Documentation
-description: Guides for performing robot learning research with ROS 2 ecosystem.
+title: Robot Learning Baselines
+description: Robot learning baselines.
 theme: just-the-docs
 
-url: https://peterdavidfagan.github.io/ros2_robotics_research_toolkit # this url not being used right now
+url: https://peterdavidfagan.github.io/robot_learning_baselines # this url not being used right now
 color_scheme: ros2_robotics_research_toolkit # TODO: update name to DROID
 
 aux_links:
-  Official GitHub Repository: https://github.com/peterdavidfagan/ros2_robotics_research_toolkit
+  Official GitHub Repository: https://github.com/peterdavidfagan/robot_learning_baselines
