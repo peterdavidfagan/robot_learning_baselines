@@ -43,11 +43,6 @@ from utils.pipeline import (
 # model architecture
 from multi_modal_transformers.models.octo import Octo
 
-# logging
-#from utils.logger import get_logger
-#LOG = get_logger(__name__)
-
-
 @hydra.main(version_base=None, config_path="./config", config_name="octo-base")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
@@ -89,10 +84,11 @@ def main(cfg: DictConfig) -> None:
 
     # instantiate training state
     batch = next(train_data.as_numpy_iterator())
-    text_ids = text_tokenizer(batch["task"]["language_instruction"], return_tensors="jax", padding=True, truncation=True)
-    print(batch["observation"]["image_primary"].shape)
-    print(batch["action"].shape)
-    print(batch["task"]["language_instruction"])
+    text = [task.decode() for task in batch["task"]["language_instruction"]]
+    text_ids = text_tokenizer(text, return_tensors="jax", padding=True, truncation=True)["input_ids"]
+    #print(batch["observation"]["image_primary"].shape)
+    #print(batch["action"].shape)
+    #print(text_ids)
     train_state = create_train_state(
         text_ids,
         batch["observation"]["image_primary"],
@@ -113,9 +109,6 @@ def main(cfg: DictConfig) -> None:
         #train_data = train_data.shuffle(10)
 
         #train_data_iter = train_data.as_numpy_iterator()
-        #test_data_iter = test_data.as_numpy_iterator()
-
-        # epoch metrics
 
         # training
         #for batch in train_data_iter:
