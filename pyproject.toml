@@ -57,6 +57,8 @@ rlds = {version="^0.1.7", markers = "sys_platform == 'linux'"}
 # submodules
 multi_modal_transformers = {path="./robot_learning_baselines/model_architectures/multi_modal_transformers", develop=true}
 transporter_networks = {path="./robot_learning_baselines/model_architectures/transporter_networks", develop=true}
+octo = {path="./robot_learning_baselines/submodules/octo", develop=true}
+dlimp = {path="./robot_learning_baselines/submodules/dlimp", develop=true}
 
 [tool.black]
 line-length = 120

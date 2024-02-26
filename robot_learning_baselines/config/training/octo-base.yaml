@@ -1,0 +1,22 @@
+# parallel training
+parallel_training: false
+
+# checkpoint manager
+checkpoint_dir: ${project.base_path}/.checkpoints/${wandb.experiment_name}/concept_learner
+max_checkpoints: 2
+save_interval: 50
+
+# training hyperparameters
+num_epochs: 50
+batch_size: 8
+momentum: 0.9
+
+# learning rate scheduler
+initial_lr: 1e-7
+peak_lr: 1e-4
+end_lr: 1e-5
+weight_decay: 1e-4
+max_grad_norm: 1.0
+warmup_epochs: 1
+steps_per_epoch: 1898
+

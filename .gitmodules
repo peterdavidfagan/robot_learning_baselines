@@ -4,3 +4,9 @@
 [submodule "robot_learning_baselines/model_architectures/multi_modal_transformers"]
 	path = robot_learning_baselines/model_architectures/multi_modal_transformers
 	url = git@github.com:peterdavidfagan/multi_modal_transformers.git
+[submodule "robot_learning_baselines/submodules/octo"]
+	path = robot_learning_baselines/submodules/octo
+	url = git@github.com:octo-models/octo.git
+[submodule "robot_learning_baselines/submodules/dlimp"]
+	path = robot_learning_baselines/submodules/dlimp
+	url = git@github.com:peterdavidfagan/dlimp.git
