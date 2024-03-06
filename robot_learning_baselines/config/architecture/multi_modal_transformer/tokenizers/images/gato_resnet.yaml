@@ -12,30 +12,30 @@ encoder:
   row_position_embedding:
     _target_: flax.linen.Embed
     name: "image_row_position_embedding"
-    num_embeddings: ${tokenizers.images.encoder.position_interval}
+    num_embeddings: ${architecture.multi_modal_transformer.tokenizers.images.encoder.position_interval}
     features: 768
-    dtype: ${dtype}
-    param_dtype: ${param_dtype}
+    dtype: ${architecture.multi_modal_transformer.dtype}
+    param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     embedding_init:
       _target_: flax.linen.initializers.variance_scaling
       scale: 1.0
       mode: "fan_in"
       distribution: "normal"
-      dtype: ${dtype}
+      dtype: ${architecture.multi_modal_transformer.dtype}
 
   col_position_embedding:
     _target_: flax.linen.Embed
     name: "image_col_position_embedding"
-    num_embeddings: ${tokenizers.images.encoder.position_interval}
+    num_embeddings: ${architecture.multi_modal_transformer.tokenizers.images.encoder.position_interval}
     features: 768
-    dtype: ${dtype}
-    param_dtype: ${param_dtype}
+    dtype: ${architecture.multi_modal_transformer.dtype}
+    param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     embedding_init:
       _target_: flax.linen.initializers.variance_scaling
       scale: 1.0
       mode: "fan_in"
       distribution: "normal"
-      dtype: ${dtype}
+      dtype: ${architecture.multi_modal_transformer.dtype}
 
   # input projection layer
   resnet:
@@ -48,14 +48,14 @@ encoder:
       strides: [2, 2]
       padding: VALID
       use_bias: True
-      dtype: ${dtype}
-      param_dtype: ${param_dtype}
+      dtype: ${architecture.multi_modal_transformer.dtype}
+      param_dtype: ${architecture.multi_modal_transformer.param_dtype}
       kernel_init:
         _target_: flax.linen.initializers.he_normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}
       bias_init:
         _target_: flax.linen.initializers.normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}
 
     input_pool:
       _partial_: true
@@ -69,8 +69,8 @@ encoder:
       _target_: flax.linen.GroupNorm
       num_groups: 32
       epsilon: 1e-6
-      dtype: ${dtype}
-      param_dtype: ${param_dtype}
+      dtype: ${architecture.multi_modal_transformer.dtype}
+      param_dtype: ${architecture.multi_modal_transformer.param_dtype}
 
     resnet_activation:
       _partial_: true
@@ -83,14 +83,14 @@ encoder:
       strides: [1,1]
       padding: SAME
       use_bias: True
-      dtype: ${dtype}
-      param_dtype: ${param_dtype}
+      dtype: ${architecture.multi_modal_transformer.dtype}
+      param_dtype: ${architecture.multi_modal_transformer.param_dtype}
       kernel_init:
         _target_: flax.linen.initializers.he_normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}
       bias_init:
         _target_: flax.linen.initializers.normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}
 
     # output_layer
     output_dense:
@@ -98,7 +98,7 @@ encoder:
       features: 768
       kernel_init:
         _target_: flax.linen.initializers.he_normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}
       bias_init:
         _target_: flax.linen.initializers.normal
-        dtype: ${param_dtype}
+        dtype: ${architecture.multi_modal_transformer.param_dtype}

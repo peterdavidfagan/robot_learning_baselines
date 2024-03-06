@@ -2,8 +2,12 @@
 # standard libraries
 import os
 import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
+from PIL import Image
+
+# model architecture/train state
+from multi_modal_transformers.models.octo.octo import Octo
+from multi_modal_transformers.models.octo.octo import create_octo_train_state
 
 # deep learning framework
 import jax.numpy as jnp
@@ -21,34 +25,25 @@ import hydra
 from omegaconf import DictConfig
 from clu import metrics
 
-# training utilities
-from utils.octo import (
-    create_train_state,
-)
-
 from utils.pipeline import (
     oxe_load_single_dataset,
     oxe_load_dataset,
     setup_checkpointing,
 )
 
-#from utils.wandb import (
-#    init_wandb,
-    # create_dataset_artifact,
-#    create_model_artifact,
-#    log_dataset_batch,
-#    track_gradients,
-#)
-
-# model architecture
-from multi_modal_transformers.models.octo import Octo
 
 @hydra.main(version_base=None, config_path="./config", config_name="octo-base")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
     # set up jax random number generator
     key = random.PRNGKey(0)
-    key, model_key, dropout_key, image_tokenizer_key = random.split(key, 4)
+    key, model_key, dropout_key, image_tokenizer_key, diffusion_key = random.split(key, 5)
+    rngs = {
+            "params": model_key,
+            "patch_encoding": image_tokenizer_key,
+            "dropout": dropout_key,
+            "diffusion": diffusion_key,
+            }
 
     # variables to track training progress
     BEST_MODEL = None
@@ -79,28 +74,31 @@ def main(cfg: DictConfig) -> None:
         optax.clip_by_global_norm(cfg.training.max_grad_norm),
         optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
     )
-
-    # TODO: set up weights and biases
-
-    # instantiate training state
+    
+    # create sample inputs for model initialization
     batch = next(train_data.as_numpy_iterator())
     text = [task.decode() for task in batch["task"]["language_instruction"]]
-    text_ids = text_tokenizer(text, return_tensors="jax", padding=True, truncation=True)["input_ids"]
-    #print(batch["observation"]["image_primary"].shape)
-    #print(batch["action"].shape)
-    #print(text_ids)
-    train_state = create_train_state(
-        text_ids,
-        batch["observation"]["image_primary"],
-        batch["action"],
-        model_key,
-        dropout_key,
-        image_tokenizer_key,
+    tokenizer = AutoTokenizer.from_pretrained('t5-base', model_max_length=16)
+    text_tokens = tokenizer(
+            text, 
+            return_tensors="jax", 
+            max_length=16, # hardcode while debugging
+            padding="max_length", 
+            truncation=True,
+            )["input_ids"]
+    images = batch["observation"]["image_primary"]    
+    time = jnp.ones((images.shape[0], 1))
+    noisy_actions = jnp.ones((images.shape[0], 8))
+    
+    # initialize the training state
+    train_state = create_octo_train_state(
+        text_tokens,
+        images,
+        {"time": time, "noisy_actions": noisy_actions},
+        rngs,
         model,
         optimizer
-            )
-
-    #BEST_MODEL = train_state.params  # initialise best model
+        )
 
     # training loop
     for epoch in range(cfg.training.num_epochs):

@@ -20,7 +20,16 @@ def oxe_load_single_dataset(cfg):
         cfg.dataset,
         cfg.tfds_data_dir,
             )
-    dataset = make_single_dataset(dataset_kwargs, train=True)
+    dataset = make_single_dataset(
+            dataset_kwargs, 
+            train=True,
+            traj_transform_kwargs = {
+                "window_size": 2, # for octo we will take a history of two
+                },
+            frame_transform_kwargs = {
+                "resize_size": (280,280)
+                },
+            )
     train_dataset = (
         dataset.flatten() # flattens trajectories into individual frames
         .shuffle(cfg.shuffle_buffer_size) # shuffles the frames
