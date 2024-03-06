@@ -1,0 +1,118 @@
+diffusion_action_head:
+  _target_: multi_modal_transformers.action_heads.diffusion.DiffusionActionHead
+  
+  diffusion_steps: 32
+  rng_collection: "diffusion"
+  attention_pooling:
+    _target_: multi_modal_transformers.attention_blocks.attention.MultiHeadAttentionPooling
+    
+    query_map_input:
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+    
+    dot_product_attention:
+      _target_: flax.linen.MultiHeadDotProductAttention
+      num_heads: 3
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+    
+    layer_norm: 
+      _target_: flax.linen.LayerNorm
+      epsilon: 1e-6
+      reduction_axes: [1]
+      feature_axes: [-1]
+    
+    mlp_block:
+      _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+      dense:
+        _target_: flax.linen.Dense
+        features: 768
+        kernel_init:
+          _target_: flax.linen.initializers.he_normal
+        use_bias: true
+        bias_init:
+          _target_: flax.linen.initializers.normal
+      
+      activation:
+        _partial_: true
+        _target_: flax.linen.relu
+      
+      norm:
+        _target_: flax.linen.Dropout
+        rate: 0.1
+      
+      dense_out:
+        _target_: flax.linen.Dense
+        features: 768
+        kernel_init:
+          _target_: flax.linen.initializers.he_normal
+        use_bias: true
+        bias_init:
+          _target_: flax.linen.initializers.normal
+
+  denoising_model:
+    _target_: multi_modal_transformers.action_heads.diffusion.OctoDenoise
+    time_encoder:
+      _target_: multi_modal_transformers.action_heads.diffusion.FourierFeatures
+      output_dim: 768
+      kernel_init:
+        _target_: flax.linen.initializers.he_normal
+      mlp_block:
+        _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+        dense:
+          _target_: flax.linen.Dense
+          features: 768 # TODO: read from high-level config
+          kernel_init:
+            _target_: flax.linen.initializers.he_normal
+          use_bias: true
+          bias_init:
+            _target_: flax.linen.initializers.normal
+        
+        activation:
+          _partial_: true
+          _target_: flax.linen.relu
+        
+        norm:
+          _target_: flax.linen.Dropout
+          rate: 0.1
+        
+        dense_out:
+          _target_: flax.linen.Dense
+          features: 768 # TODO: read from high-level config
+          kernel_init:
+            _target_: flax.linen.initializers.he_normal
+          use_bias: true
+          bias_init:
+            _target_: flax.linen.initializers.normal
+    
+    num_blocks: 1
+    mlp_block:
+      _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+      dense:
+        _target_: flax.linen.Dense
+        features: 768
+        kernel_init:
+          _target_: flax.linen.initializers.he_normal
+        use_bias: true
+        bias_init:
+          _target_: flax.linen.initializers.normal
+      
+      activation:
+        _partial_: true
+        _target_: flax.linen.relu
+      
+      norm:
+        _target_: flax.linen.Dropout
+        rate: 0.1
+      
+      dense_out:
+        _target_: flax.linen.Dense
+        features: 8
+        kernel_init:
+          _target_: flax.linen.initializers.he_normal
+        use_bias: true
+        bias_init:
+          _target_: flax.linen.initializers.normal
+    
+
+

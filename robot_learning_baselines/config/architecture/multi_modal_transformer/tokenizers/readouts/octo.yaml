@@ -1,0 +1,5 @@
+encoder:
+  _target_: multi_modal_transformers.tokenizers.readout.readout.AddPositionEmbedding
+  posemb_init: 
+    _target_: flax.linen.initializers.he_normal
+    dtype: ${param_dtype}
