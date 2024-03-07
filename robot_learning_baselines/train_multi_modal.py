@@ -4,12 +4,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from tqdm import tqdm
 
 # model architecture/train state
 from multi_modal_transformers.models.octo.octo import Octo
 from multi_modal_transformers.models.octo.octo import create_octo_train_state
 
 # deep learning framework
+import jax
 import jax.numpy as jnp
 import jax.random as random
 from jax.nn import softmax
@@ -37,11 +39,12 @@ from utils.wandb import init_wandb
 @hydra.main(version_base=None, config_path="./config", config_name="octo-base")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
+    
     # initialize weights and biases
     if cfg.wandb.use:
         init_wandb(cfg)
 
-    # set up jax random number generator
+    # set up random number generators
     key = random.PRNGKey(0)
     key, model_key, dropout_key, image_tokenizer_key, diffusion_key = random.split(key, 5)
     rngs = {
@@ -51,20 +54,12 @@ def main(cfg: DictConfig) -> None:
             "diffusion": diffusion_key,
             }
 
-    # variables to track training progress
-    BEST_MODEL = None
-    TEST_LOSS = np.inf
-
     # load the dataset
     train_data = oxe_load_single_dataset(cfg.dataset) # for now debug the datapipeline
     #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only)
 
-    # setup experiment checkpointing for concept learner model
+    # set up model checkpointing
     chkpt_manager = setup_checkpointing(cfg.training)
-
-    # instantiate model and text tokenizer
-    model = Octo(cfg.architecture.multi_modal_transformer)
-    text_tokenizer = instantiate(cfg.architecture.multi_modal_transformer.tokenizers.text.tokenizer)
     
     # instantiate model optimizer
     learning_rate_scheduler = optax.warmup_cosine_decay_schedule(
@@ -80,12 +75,15 @@ def main(cfg: DictConfig) -> None:
         optax.clip_by_global_norm(cfg.training.max_grad_norm),
         optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
     )
+
+    # instantiate model and text tokenizer
+    model = Octo(cfg.architecture.multi_modal_transformer)
+    text_tokenizer = instantiate(cfg.architecture.multi_modal_transformer.tokenizers.text.tokenizer)
     
-    # create sample inputs for model initialization
+    # initialize the training state with a batch of data
     batch = next(train_data.as_numpy_iterator())
     text = [task.decode() for task in batch["task"]["language_instruction"]]
-    tokenizer = AutoTokenizer.from_pretrained('t5-base', model_max_length=16)
-    text_tokens = tokenizer(
+    text_tokens = text_tokenizer(
             text, 
             return_tensors="jax", 
             max_length=16, # hardcode while debugging
@@ -96,7 +94,6 @@ def main(cfg: DictConfig) -> None:
     time = jnp.ones((images.shape[0], 1))
     noisy_actions = jnp.ones((images.shape[0], 8))
     
-    # initialize the training state
     train_state = create_octo_train_state(
         text_tokens,
         images,
@@ -108,27 +105,30 @@ def main(cfg: DictConfig) -> None:
         )
 
     # training loop
-    for epoch in range(cfg.training.num_epochs):
-        print(f"Epoch {epoch + 1}/{cfg.training.num_epochs}")
+    for epoch in tqdm(range(cfg.training.num_epochs)):
+        
         # shuffle dataset and create iterator
-        #train_data = train_data.shuffle(10)
-
-        #train_data_iter = train_data.as_numpy_iterator()
-
-        # training
-        #for batch in train_data_iter:
-        #    train_state, grads = bc_train_step(
-        #        train_state,
-        #        batch["concept"],
-        #        batch["trajectory"]["frame"],
-        #        batch["trajectory"]["action"],
-        #        batch["target_action"],
-        #        dropout_key,
-        #        image_tokenizer_key,
-        #    )
+        train_data = train_data.shuffle(10)
+        train_data_iter = train_data.as_numpy_iterator()
+    
+        # cycle through batches of data
+        for batch in train_data_iter:
+     
+            # tokenize text
+            text = [task.decode() for task in batch["task"]["language_instruction"]]
+            text_tokens = train_state.text_tokenize_fn(text)["input_ids"]
+            
+            # perform diffusion train step
+            train_state = train_state.diffusion_train_step(
+                    model, 
+                    train_state, 
+                    text_tokens, 
+                    batch["observation"]["image_primary"], 
+                    jnp.ones((text_tokens.shape[0], 8)),
+                    )
 
         # save checkpoint
-        #chkpt_manager.save(epoch, train_state)
+        chkpt_manager.save(epoch, train_state)
 
 
 if __name__ == "__main__":
