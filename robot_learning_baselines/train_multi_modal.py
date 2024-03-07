@@ -22,6 +22,7 @@ from transformers import AutoTokenizer
 # experiment tracking
 import wandb
 import hydra
+from hydra.utils import instantiate
 from omegaconf import DictConfig
 from clu import metrics
 
@@ -58,7 +59,7 @@ def main(cfg: DictConfig) -> None:
 
     # instantiate model and text tokenizer
     model = Octo(cfg.architecture.multi_modal_transformer)
-    text_tokenizer = AutoTokenizer.from_pretrained('t5-base')
+    text_tokenizer = instantiate(cfg.architecture.multi_modal_transformer.tokenizers.text.tokenizer)
     
     # instantiate model optimizer
     learning_rate_scheduler = optax.warmup_cosine_decay_schedule(
@@ -94,6 +95,7 @@ def main(cfg: DictConfig) -> None:
     train_state = create_octo_train_state(
         text_tokens,
         images,
+        text_tokenizer,
         {"time": time, "noisy_actions": noisy_actions},
         rngs,
         model,
