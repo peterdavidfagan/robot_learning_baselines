@@ -12,6 +12,6 @@ wandb:
 
 defaults:
   - architecture/multi_modal_transformer: octo-base 
-  - dataset: debug-open-x-embodiment # open-x-embodiment
+  - dataset: debug-open-x-embodiment
   - evaluation: octo-base
   - training: octo-base
