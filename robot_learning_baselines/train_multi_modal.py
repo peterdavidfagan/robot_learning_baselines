@@ -92,42 +92,63 @@ def main(cfg: DictConfig) -> None:
             )["input_ids"]
     images = batch["observation"]["image_primary"]    
     time = jnp.ones((images.shape[0], 1))
-    noisy_actions = jnp.ones((images.shape[0], 8))
+    actions = jnp.take(batch["action"], -1, axis=1)
     
     train_state = create_octo_train_state(
         text_tokens,
         images,
         text_tokenizer,
-        {"time": time, "noisy_actions": noisy_actions},
+        {"time": time, "noisy_actions": actions},
         rngs,
         model,
         optimizer
         )
 
     # training loop
-    for epoch in tqdm(range(cfg.training.num_epochs)):
+    for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
         
+        # epoch metrics
+        metrics_history = {
+            "denoise_loss": [],
+        }
+
         # shuffle dataset and create iterator
         train_data = train_data.shuffle(10)
         train_data_iter = train_data.as_numpy_iterator()
     
         # cycle through batches of data
         for batch in train_data_iter:
-     
+            
             # tokenize text
             text = [task.decode() for task in batch["task"]["language_instruction"]]
             text_tokens = train_state.text_tokenize_fn(text)["input_ids"]
-            
+            actions = jnp.take(batch["action"], -1, axis=1)
+
             # perform diffusion train step
             train_state = train_state.diffusion_train_step(
                     model, 
                     train_state, 
                     text_tokens, 
                     batch["observation"]["image_primary"], 
-                    jnp.ones((text_tokens.shape[0], 8)),
+                    actions,
                     )
+            
+            # break loop for the purpose of debugging training pipeline
+            break
 
-        # save checkpoint
+        # compute and track metrics
+        for metric, value in train_state.metrics.compute().items():
+            metrics_history[f"{metric}"].append(value)
+        train_state = train_state.replace(metrics=train_state.metrics.empty())
+        
+        if cfg.wandb.use:
+            wandb.log({
+                        "denoise_loss": metrics_history["denoise_loss"][-1],
+                    })
+        print(f"Epoch {epoch} train loss: {metrics_history['denoise_loss'][-1]}")
+
+
+        # save model checkpoint
         chkpt_manager.save(epoch, train_state)
 
 
