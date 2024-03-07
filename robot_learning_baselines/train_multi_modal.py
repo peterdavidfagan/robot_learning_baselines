@@ -32,10 +32,15 @@ from utils.pipeline import (
     setup_checkpointing,
 )
 
+from utils.wandb import init_wandb
 
 @hydra.main(version_base=None, config_path="./config", config_name="octo-base")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
+    # initialize weights and biases
+    if cfg.wandb.use:
+        init_wandb(cfg)
+
     # set up jax random number generator
     key = random.PRNGKey(0)
     key, model_key, dropout_key, image_tokenizer_key, diffusion_key = random.split(key, 5)

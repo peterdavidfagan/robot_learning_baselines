@@ -2,10 +2,13 @@ project:
   base_path: /home/peter/Code/research_projects/robot_learning_baselines
 
 wandb:
+  project: "robot_learning_baselines"
+  entity: "ipab-rad"
   use: True
   experiment_name: octo-base
   tags: ["debugging octo pipeline"]
   notes: "Debugging octo training pipeline."
+  resume: False
 
 defaults:
   - architecture/multi_modal_transformer: octo-base 
