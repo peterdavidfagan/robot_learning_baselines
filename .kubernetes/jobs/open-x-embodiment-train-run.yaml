@@ -26,7 +26,7 @@ spec:
         - name: s2456316-ghcr-secret
       restartPolicy: Never
       containers:
-        - name: robot_learning_baselines_train_container
+        - name: robot-learning-baselines-train-container
           image: ghcr.io/peterdavidfagan/robot_learning_baselines_train:latest
           command: ["/bin/bash"]
           args: ["-c", "source .venv/bin/activate && python /app/code_refresh/robot_learning_baselines.git/robot_learning_baselines/train_multi_modal.py project.base_path=/app/code_refresh/robot_learning_baselines.git +dataset=debug-open-x-embodiment-eidf"]
