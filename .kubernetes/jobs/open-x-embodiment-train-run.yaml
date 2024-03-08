@@ -2,6 +2,8 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: s2456316-oxe-train-job
+   labels:
+      kueue.x-k8s.io/informatics-user-queue:  informatics-user-queue
 spec:
   parallelism: 1
   template:
