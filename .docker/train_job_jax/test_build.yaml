@@ -1,0 +1,8 @@
+version: "3"
+services:
+  test-build:
+    image: ghcr.io/peterdavidfagan/robot_learning_baselines_train
+    build:
+      context: ../../
+      dockerfile: .docker/train_job_jax/Dockerfile.train_job
+    command: python /app/robot_learning_baselines/train_multi_modal.py
