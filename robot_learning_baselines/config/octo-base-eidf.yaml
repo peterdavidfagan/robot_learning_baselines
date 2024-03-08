@@ -1,0 +1,17 @@
+project:
+  base_path: /app/code_refresh/robot_learning_baselines.git
+
+wandb:
+  project: "robot_learning_baselines"
+  entity: "ipab-rad"
+  use: True
+  experiment_name: octo-base
+  tags: ["debugging octo pipeline"]
+  notes: "Debugging octo training pipeline."
+  resume: False
+
+defaults:
+  - architecture/multi_modal_transformer: octo-base 
+  - dataset: debug-open-x-embodiment-eidf
+  - evaluation: octo-base
+  - training: octo-base

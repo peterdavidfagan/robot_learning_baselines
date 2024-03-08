@@ -1,0 +1,5 @@
+dataset: taco_play
+tfds_data_dir: /app/data
+shuffle_buffer_size: 1000
+batch_size: ${training.batch_size}
+
