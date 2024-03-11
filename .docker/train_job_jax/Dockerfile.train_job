@@ -34,6 +34,7 @@ RUN eval "$(/pyenv/bin/pyenv init -)" && /pyenv/bin/pyenv local 3.10.6 && poetry
 
 FROM ghcr.io/peterdavidfagan/jax_container:latest as targetsys
 
+ENV WANDB_API_KEY=b45be466fddfec3e14a65ff903fac3b3b7e78c41
 COPY --from=compilesys /pyenv /pyenv
 COPY --from=compilesys /app /app
 WORKDIR /app

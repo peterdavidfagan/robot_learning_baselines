@@ -41,3 +41,27 @@ def init_wandb(cfg, resume=False):
     # define model checkpoint directory
 
 
+def visualize_dataset(cfg, raw_batch):
+    """
+    Visualize raw dataset in wandb table.
+    """
+    batch_size = cfg.training.batch_size
+    table_config = dict(cfg.wandb.dataset_visualization.columns)
+    column_names = list(table_config.keys())
+    
+    data = []
+    for i in range(batch_size):
+        sample = []
+        for name, value in table_config.items():
+            section, field = name.split("/")
+            if value == "image":
+                image_data = raw_batch[section][field][i]
+                sample.append(wandb.Image(e.rearrange(image_data, "seq h w c -> h (seq w) c")))
+            elif value == "text":
+                sample.append(raw_batch[section][field][i].decode())
+            else:
+                continue
+        data.append(sample)
+        
+    table = wandb.Table(data=data, columns=column_names)    
+    wandb.log({"dataset": table})

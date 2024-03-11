@@ -52,6 +52,7 @@ jaxonnxruntime = "^0.3.0"
 dm-reverb = {version="0.13.0", markers = "sys_platform == 'linux'"}
 tensorflow-cpu = {version="^2.14.0", markers = "sys_platform == 'linux'"}
 envlogger = {version="^1.1", extras=["tfds"], markers = "sys_platform == 'linux'"}
+tensorflow-datasets = "4.9.3"
 rlds = {version="^0.1.7", markers = "sys_platform == 'linux'"}
 
 # submodules
@@ -59,6 +60,7 @@ multi_modal_transformers = {path="./robot_learning_baselines/model_architectures
 transporter_networks = {path="./robot_learning_baselines/model_architectures/transporter_networks", develop=true}
 octo = {path="./robot_learning_baselines/submodules/octo", develop=true}
 dlimp = {path="./robot_learning_baselines/submodules/dlimp", develop=true}
+distrax = "^0.1.5"
 
 [tool.black]
 line-length = 120
