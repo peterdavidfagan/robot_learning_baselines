@@ -1,7 +1,6 @@
 """Training script for concept learning model."""
 # standard libraries
 import os
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".9"
 import gc
 from time import time
 from functools import partial
@@ -23,7 +22,6 @@ from jax.nn import softmax
 import flax.linen as nn
 import optax
 import orbax.checkpoint as ocp
-import tensorflow as tf
 
 # tokenizer from huggingface
 from transformers import AutoTokenizer
@@ -56,7 +54,6 @@ from utils.wandb import (
 @hydra.main(version_base=None, config_path="./config", config_name="octo-base")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
-    assert jax.default_backend() != "cpu" # ensure accelerator is available
 
     key = random.PRNGKey(0)
     key, model_key, dropout_key, image_tokenizer_key, diffusion_key = random.split(key, 5)
@@ -68,8 +65,6 @@ def main(cfg: DictConfig) -> None:
             }
 
     train_data = oxe_load_single_dataset(cfg.dataset) # load dataset for debugging
-    cardinality = 3177 # hardcode while debugging
-    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
     #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only) # load dataset
     
     if cfg.wandb.use: # optionally initialise wandb
@@ -91,74 +86,20 @@ def main(cfg: DictConfig) -> None:
     # initialize the training state
     batch = next(train_data.as_numpy_iterator())
     input_data = preprocess_batch(batch, text_tokenize_fn, dummy=True)
-    #inspect_model(model, rngs, input_data, method="predict_diffusion_denoise_term")
-    #train_state = create_octo_train_state(
-    #    input_data["text_tokens"],
-    #    input_data["images"],
-    #    text_tokenizer,
-    #    {"time": input_data["time"], "noisy_actions": input_data["noisy_actions"]},
-    #    rngs,
-    #    model,
-    #    optimizer
-    #    )
-    #inspect_model(model, rngs, input_data, method="predict_continuous_action")
-    train_state = create_octo_train_state(
+    variables = model.init(
+        rngs, 
         input_data["text_tokens"],
         input_data["images"],
-        text_tokenizer,
-        {"time": input_data["time"], "noisy_actions": input_data["noisy_actions"]},
-        rngs,
-        model,
-        optimizer,
-        method="predict_continuous_action",
-        )
-
-    for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
-        
-        # epoch metrics
-        metrics_history = {
-            "denoise_loss": [],
-        }
-
-        # shuffle dataset and create iterator
-        train_data = train_data.shuffle(10)
-        train_data_iter = train_data.as_numpy_iterator()
+        method="generate_readouts"
+    )
+    #inspect_model(model, rngs, input_data, method="predict_continuous_action")
     
-        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-            data = preprocess_batch(batch, train_state.text_tokenize_fn)
-            
-            train_state = train_state.continuous_train_step(
-                    model, 
-                    train_state, 
-                    data["text_tokens"], 
-                    data["images"], 
-                    data["gt_action"],
-                    )
-
-            #train_state = train_state.diffusion_train_step(
-            #        model, 
-            #        train_state, 
-            #        data["text_tokens"], 
-            #        data["images"], 
-            #        data["gt_action"],
-            #        )
-
-        # compute and track metrics
-        for metric, value in train_state.metrics.compute().items():
-            metrics_history[f"{metric}"].append(value)
-        train_state = train_state.replace(metrics=train_state.metrics.empty())
-        
-        if cfg.wandb.use:
-            wandb.log({
-                        "denoise_loss": metrics_history["denoise_loss"][-1],
-                    })
-        print(f"Epoch {epoch} train loss: {metrics_history['denoise_loss'][-1]}")
-
-
-        # save model checkpoint
-        chkpt_manager.save(epoch, train_state)
-
+    while True:
+        print("...")
+        start = time()
+        model.apply(variables, input_data["text_tokens"], input_data["images"], rngs=rngs, method="generate_readouts")
+        end = time()
+        print("Time: {}".format(end-start))
 
 if __name__ == "__main__":
     main()
-
