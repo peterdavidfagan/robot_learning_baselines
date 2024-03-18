@@ -55,44 +55,40 @@ config = compose(
     )
 
 if __name__ == "__main__":
-   
-    # set up experiment tracking with wandb
-    if config.wandb.use:
-        run = init_wandb(config)
-
-    # instantiate models
-    pick_model = TransporterNetwork(config=config.model.pick)
-    place_model = TransporterPlaceNetwork(config=config.model.place)
+    assert jax.default_backend() != "cpu" # ensure accelerator is available
     
-    # instantiate optimizers
-    pick_optimizer = instantiate(config.training.pick.optimizer)
-    place_optimizer = instantiate(config.training.place.optimizer)
-    
-    # create model training states
     key = jax.random.PRNGKey(0)
     model1_key, model2_key = jax.random.split(key, 2)
     
-    # TODO: ensure dummy data is dynamically configured based on config
+    # train_data = 
+    # cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
+
+    if config.wandb.use:
+        init_wandb(config)
+        #visualize_dataset(cfg, next(train_data.as_numpy_iterator()))
+
+    
+    # TODO: complete these
+    #chkpt_manager = setup_checkpointing(cfg.training) # set up model checkpointing   
+    pick_optimizer = instantiate(config.training.pick.optimizer)
+    place_optimizer = instantiate(config.training.place.optimizer)
+    pick_model = TransporterNetwork(config=config.model.pick)
+    place_model = TransporterPlaceNetwork(config=config.model.place)
+    
+    
+    
+    # TODO: replace dummy data with actual batch from dataset
+    #batch = next(train_data.as_numpy_iterator())
     dummy_rgbd_data = jnp.ones((10, 160, 320, 4), dtype=jnp.float32)
     dummy_rgbd_crop_data = jnp.ones((10, 64, 64, 4), dtype=jnp.float32)
-
+    
     pick_train_state = create_transporter_train_state(
             dummy_rgbd_data,
             pick_model,
             model1_key,
             pick_optimizer,
             )
-    
-    # inspect model structure
-    print(
-            pick_model.tabulate(
-            {
-                "params": model1_key,
-            },
-            dummy_rgbd_data,
-            train=False,
-            )
-        )
+    # inspect_transporter_model()
 
     place_train_state = create_transporter_place_train_state(
             dummy_rgbd_data,
@@ -101,24 +97,15 @@ if __name__ == "__main__":
             model2_key,
             place_optimizer,
             )
-
-    # inspect model structure
-    print(
-        place_model.tabulate(
-                {
-                    "params": model2_key,
-                },
-                dummy_rgbd_data,
-                dummy_rgbd_crop_data,
-                train=False,
-                )
-        )
+    # inspect_transporter_model()
 
     transporter = Transporter(
             pick_model_state = pick_train_state,
             place_model_state = place_train_state,
             )
 
+
+    # TODO: migrate process_batch to utilities file
     def process_batch(batch):
         """
         Process batch of data.
@@ -200,6 +187,10 @@ if __name__ == "__main__":
         rgbd_crop_normalized = jax.vmap(normalize_rgbd, 0)(rgbd_crop)
     
         return (rgbd, rgbd_crop), (rgbd_normalized, rgbd_normalized), (pick_pixels, place_pixels), (pick_ids, place_ids)
+
+
+    # TODO: Completely refactor what is below this line
+
 
     ds = load_dataset(config)
     
