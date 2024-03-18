@@ -14,5 +14,5 @@ defaults:
   - tokenizers/images: gato_resnet
   - tokenizers/readouts: octo
   - attention_blocks: vanilla_decoder
-  - action_heads: continuous #diffusion
+  - action_heads: diffusion #continuous
 

@@ -122,6 +122,7 @@ def preprocess_batch(batch, text_tokenize_fn, action_head_type="diffusion", dumm
             data = {
                     "images": images,
                     "text_tokens": text_tokens,
+                    "gt_action": gt_action,
                     }
     
     else:

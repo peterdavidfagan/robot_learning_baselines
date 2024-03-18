@@ -1,6 +1,6 @@
 stacked_encoder_1d_block:
   _target_: multi_modal_transformers.attention_blocks.attention.StackedEncoder1DBlock
-  num_blocks: 8
+  num_blocks: 12
   encoder_1d_block:
     _target_: multi_modal_transformers.attention_blocks.attention.Encoder1DBlock
     
@@ -18,7 +18,7 @@ stacked_encoder_1d_block:
     
     self_attention:
       _target_: flax.linen.SelfAttention
-      num_heads: 8
+      num_heads: 12
       qkv_features: 768
       dropout_rate: 0.1
       decode: false
@@ -34,7 +34,7 @@ stacked_encoder_1d_block:
       _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
       dense:
         _target_: flax.linen.Dense
-        features: 768
+        features: 3072
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
