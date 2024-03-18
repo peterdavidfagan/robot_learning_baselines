@@ -115,21 +115,33 @@ def main(cfg: DictConfig) -> None:
         optimizer,
         method=cfg.architecture.multi_modal_transformer.action_heads.forward_method
         )
-
-    for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
-        
-        # epoch metrics
-        metrics_history = {
-            "loss": [],
-        }
-
-        # shuffle dataset and create iterator
-        train_data = train_data.shuffle(10)
-        train_data_iter = train_data.as_numpy_iterator()
-
-        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-            if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
+    
+    if cfg.debug_run:
+        if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
                 data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+        elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
+            data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
+        else:
+            raise NotImplementedError
+        
+        data["text_tokens"] = np.repeat(
+                                np.expand_dims(data["text_tokens"][0], axis=0), 
+                                cfg.training.batch_size, 
+                                axis=0)
+        
+        data["images"] = np.repeat(
+                            np.expand_dims(data["images"][0], axis=0), 
+                            cfg.training.batch_size, 
+                            axis=0)
+        
+        data["gt_action"] = np.repeat(
+                                np.expand_dims(data["gt_action"][0], axis=0), 
+                                cfg.training.batch_size,
+                                axis=0)
+
+        loss = 1e3
+        while loss > 1e-2:
+            if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
                 train_state = train_state.continuous_train_step(
                         model, 
                         train_state, 
@@ -138,7 +150,6 @@ def main(cfg: DictConfig) -> None:
                         data["gt_action"],
                         )
             elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
-                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
                 train_state = train_state.diffusion_train_step(
                         model, 
                         train_state, 
@@ -149,22 +160,64 @@ def main(cfg: DictConfig) -> None:
             else:
                 raise NotImplementedError
 
+            loss = train_state.metrics.compute()["loss"]
+            train_state = train_state.replace(metrics=train_state.metrics.empty())
 
-        # compute and track metrics
-        for metric, value in train_state.metrics.compute().items():
-            metrics_history[f"{metric}"].append(value)
-        train_state = train_state.replace(metrics=train_state.metrics.empty())
-        
-        if cfg.wandb.use:
-            wandb.log({
-                        "epoch_loss": metrics_history["loss"][-1],
-                        "epoch": epoch,
-                    })
-        print(f"Epoch {epoch} train loss: {metrics_history['loss'][-1]}")
+            if cfg.wandb.use:
+                wandb.log({
+                            "loss": loss,
+                        })
+    
+    else:
+        for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
+            
+            # epoch metrics
+            metrics_history = {
+                "loss": [],
+            }
+
+            # shuffle dataset and create iterator
+            train_data = train_data.shuffle(10)
+            train_data_iter = train_data.as_numpy_iterator()
+
+            for batch in tqdm(train_data_iter, leave=False, total=cardinality):
+                if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
+                    data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+                    train_state = train_state.continuous_train_step(
+                            model, 
+                            train_state, 
+                            data["text_tokens"], 
+                            data["images"], 
+                            data["gt_action"],
+                            )
+                elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
+                    data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
+                    train_state = train_state.diffusion_train_step(
+                            model, 
+                            train_state, 
+                            data["text_tokens"], 
+                            data["images"], 
+                            data["gt_action"],
+                            )
+                else:
+                    raise NotImplementedError
 
 
-        # save model checkpoint
-        chkpt_manager.save(epoch, train_state)
+            # compute and track metrics
+            for metric, value in train_state.metrics.compute().items():
+                metrics_history[f"{metric}"].append(value)
+            train_state = train_state.replace(metrics=train_state.metrics.empty())
+            
+            if cfg.wandb.use:
+                wandb.log({
+                            "epoch_loss": metrics_history["loss"][-1],
+                            "epoch": epoch,
+                        })
+            print(f"Epoch {epoch} train loss: {metrics_history['loss'][-1]}")
+
+
+            # save model checkpoint
+            chkpt_manager.save(epoch, train_state)
 
 
 if __name__ == "__main__":
