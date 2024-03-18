@@ -74,5 +74,5 @@ def create_optimizer(cfg):
         optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
     )
     
-    return optimizer
+    return optimizer, learning_rate_scheduler
 

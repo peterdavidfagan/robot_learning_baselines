@@ -78,7 +78,7 @@ def main(cfg: DictConfig) -> None:
         visualize_dataset(cfg, next(train_data.as_numpy_iterator()))
     
     chkpt_manager = setup_checkpointing(cfg.training) # set up model checkpointing   
-    optimizer = create_optimizer(cfg) # instantiate model optimizer
+    optimizer, lr_scheduler = create_optimizer(cfg) # instantiate model optimizer
     model = Octo(cfg.architecture.multi_modal_transformer) # instantiate model
     text_tokenizer = instantiate(cfg.architecture.multi_modal_transformer.tokenizers.text.tokenizer) # instantiate text tokenizer
     text_tokenize_fn = partial(text_tokenizer, 
@@ -116,6 +116,7 @@ def main(cfg: DictConfig) -> None:
         method=cfg.architecture.multi_modal_transformer.action_heads.forward_method
         )
     
+    # TODO: remove debug run once finished debugging
     if cfg.debug_run:
         if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
                 data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
@@ -166,6 +167,7 @@ def main(cfg: DictConfig) -> None:
             if cfg.wandb.use:
                 wandb.log({
                             "loss": loss,
+                            "learning_rate": lr_scheduler(train_state.step),
                         })
     
     else:
