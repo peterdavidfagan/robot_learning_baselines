@@ -1,0 +1,5 @@
+dataset: taco_play
+tfds_data_dir: /media/peter/400cb321-2b54-4ffc-a661-2d49ca87dfaf/openx_datasets
+shuffle_buffer_size: 1000
+batch_size: ${training.batch_size}
+

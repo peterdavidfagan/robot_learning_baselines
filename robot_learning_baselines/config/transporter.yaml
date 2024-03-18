@@ -1,6 +1,20 @@
+project:
+  base_path: /home/peter/Code/research_projects/robot_learning_baselines
 
+wandb:
+  use: True
+  project: "robot_learning_baselines"
+  entity: "ipab-rad"
+  experiment_name: transporter-debug
+  tags: ["debugging transporter pipeline"]
+  notes: "Debugging transporter training pipeline."
+  resume: False
+
+  dataset_visualization:
+
+debug_run: True
 defaults:
-  architecture:
-  dataset:
-  evaluation:
-  training:
+  - architecture/transporter: transporter
+  - dataset: debug-transporter
+  - evaluation: transporter
+  - training: transporter

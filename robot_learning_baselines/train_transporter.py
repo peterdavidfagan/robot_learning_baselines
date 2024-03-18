@@ -40,19 +40,51 @@ import hydra
 from hydra import compose, initialize
 from hydra.utils import call, instantiate
 
-import warnings
-warnings.simplefilter(action='ignore', category=DeprecationWarning)
 
-# clear hydra global state to avoid conflicts with other hydra instances
-hydra.core.global_hydra.GlobalHydra.instance().clear()
-initialize(version_base=None, config_path="./config", job_name="default_config")
-config = compose(
-    config_name="rearrangement",
-    overrides=[
-        "+name=colour_splitter",
-        "arena/props=colour_splitter"
-        ]
-    )
+@hydra.main(version_base=None, config_path="./config", config_name="transporter")
+def main(cfg: DictConfig) -> None:
+    """Model training loop."""
+    assert jax.default_backend() != "cpu" # ensure accelerator is available
+    
+    key = jax.random.PRNGKey(0)
+    model1_key, model2_key = jax.random.split(key, 2)
+
+    # TODO: complete these
+    #chkpt_manager = setup_checkpointing(cfg.training) # set up model checkpointing   
+    pick_optimizer = instantiate(config.training.pick.optimizer)
+    place_optimizer = instantiate(config.training.place.optimizer)
+    pick_model = TransporterNetwork(config=config.model.pick)
+    place_model = TransporterPlaceNetwork(config=config.model.place)
+    
+    # TODO: replace dummy data with actual batch from dataset
+    #batch = next(train_data.as_numpy_iterator())
+    dummy_rgbd_data = jnp.ones((10, 160, 320, 4), dtype=jnp.float32)
+    dummy_rgbd_crop_data = jnp.ones((10, 64, 64, 4), dtype=jnp.float32)
+    
+    pick_train_state = create_transporter_train_state(
+            dummy_rgbd_data,
+            pick_model,
+            model1_key,
+            pick_optimizer,
+            )
+    # inspect_transporter_model()
+
+    place_train_state = create_transporter_place_train_state(
+            dummy_rgbd_data,
+            dummy_rgbd_crop_data,
+            place_model,
+            model2_key,
+            place_optimizer,
+            )
+    # inspect_transporter_model()
+
+    transporter = Transporter(
+            pick_model_state = pick_train_state,
+            place_model_state = place_train_state,
+            )
+
+
+    raise NotImplementedError
 
 if __name__ == "__main__":
     assert jax.default_backend() != "cpu" # ensure accelerator is available
