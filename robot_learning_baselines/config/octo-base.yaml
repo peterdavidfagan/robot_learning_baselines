@@ -2,10 +2,10 @@ project:
   base_path: /home/peter/Code/research_projects/robot_learning_baselines
 
 wandb:
-  use: False
+  use: True
   project: "robot_learning_baselines"
   entity: "ipab-rad"
-  experiment_name: octo-base
+  experiment_name: octo-debug
   tags: ["debugging octo pipeline"]
   notes: "Debugging octo training pipeline."
   resume: False

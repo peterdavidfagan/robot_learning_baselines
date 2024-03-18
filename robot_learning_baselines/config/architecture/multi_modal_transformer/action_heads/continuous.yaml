@@ -1,3 +1,5 @@
+forward_method: predict_continuous_action
+type: continuous
 action_space_dim: 7
 max_action: 3
 diffusion_action_head: null

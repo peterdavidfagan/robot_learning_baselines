@@ -31,7 +31,7 @@ from transformers import AutoTokenizer
 # experiment tracking
 import wandb
 import hydra
-from hydra.utils import instantiate
+from hydra.utils import instantiate, call
 from omegaconf import DictConfig
 from clu import metrics
 
@@ -68,14 +68,14 @@ def main(cfg: DictConfig) -> None:
             }
 
     train_data = oxe_load_single_dataset(cfg.dataset) # load dataset for debugging
-    cardinality = 3177 # hardcode while debugging
-    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
     #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only) # load dataset
+    
+    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
+    cardinality = 3177 # hardcode while debugging
     
     if cfg.wandb.use: # optionally initialise wandb
         init_wandb(cfg)
         visualize_dataset(cfg, next(train_data.as_numpy_iterator()))
-        
     
     chkpt_manager = setup_checkpointing(cfg.training) # set up model checkpointing   
     optimizer = create_optimizer(cfg) # instantiate model optimizer
@@ -90,18 +90,21 @@ def main(cfg: DictConfig) -> None:
     
     # initialize the training state
     batch = next(train_data.as_numpy_iterator())
-    input_data = preprocess_batch(batch, text_tokenize_fn, dummy=True)
-    #inspect_model(model, rngs, input_data, method="predict_diffusion_denoise_term")
-    #train_state = create_octo_train_state(
-    #    input_data["text_tokens"],
-    #    input_data["images"],
-    #    text_tokenizer,
-    #    {"time": input_data["time"], "noisy_actions": input_data["noisy_actions"]},
-    #    rngs,
-    #    model,
-    #    optimizer
-    #    )
-    #inspect_model(model, rngs, input_data, method="predict_continuous_action")
+    input_data = preprocess_batch(
+            batch, 
+            text_tokenize_fn, 
+            action_head_type=cfg.architecture.multi_modal_transformer.action_heads.type, 
+            dummy=True
+            )
+    inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.action_heads.forward_method)
+    
+
+    # for now due to api we need to generate time + noisy actions, fix this in future
+    input_data = preprocess_batch(
+            batch, 
+            text_tokenize_fn, 
+            dummy=True
+            )
     train_state = create_octo_train_state(
         input_data["text_tokens"],
         input_data["images"],
@@ -110,38 +113,42 @@ def main(cfg: DictConfig) -> None:
         rngs,
         model,
         optimizer,
-        method="predict_continuous_action",
+        method=cfg.architecture.multi_modal_transformer.action_heads.forward_method
         )
 
     for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
         
         # epoch metrics
         metrics_history = {
-            "denoise_loss": [],
+            "loss": [],
         }
 
         # shuffle dataset and create iterator
         train_data = train_data.shuffle(10)
         train_data_iter = train_data.as_numpy_iterator()
-    
-        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-            data = preprocess_batch(batch, train_state.text_tokenize_fn)
-            
-            train_state = train_state.continuous_train_step(
-                    model, 
-                    train_state, 
-                    data["text_tokens"], 
-                    data["images"], 
-                    data["gt_action"],
-                    )
 
-            #train_state = train_state.diffusion_train_step(
-            #        model, 
-            #        train_state, 
-            #        data["text_tokens"], 
-            #        data["images"], 
-            #        data["gt_action"],
-            #        )
+        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
+            if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
+                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+                train_state = train_state.continuous_train_step(
+                        model, 
+                        train_state, 
+                        data["text_tokens"], 
+                        data["images"], 
+                        data["gt_action"],
+                        )
+            elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
+                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
+                train_state = train_state.diffusion_train_step(
+                        model, 
+                        train_state, 
+                        data["text_tokens"], 
+                        data["images"], 
+                        data["gt_action"],
+                        )
+            else:
+                raise NotImplementedError
+
 
         # compute and track metrics
         for metric, value in train_state.metrics.compute().items():
@@ -150,9 +157,10 @@ def main(cfg: DictConfig) -> None:
         
         if cfg.wandb.use:
             wandb.log({
-                        "denoise_loss": metrics_history["denoise_loss"][-1],
+                        "epoch_loss": metrics_history["loss"][-1],
+                        "epoch": epoch,
                     })
-        print(f"Epoch {epoch} train loss: {metrics_history['denoise_loss'][-1]}")
+        print(f"Epoch {epoch} train loss: {metrics_history['loss'][-1]}")
 
 
         # save model checkpoint

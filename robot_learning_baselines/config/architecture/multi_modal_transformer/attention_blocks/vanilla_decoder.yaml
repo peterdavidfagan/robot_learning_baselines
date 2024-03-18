@@ -1,6 +1,6 @@
 stacked_encoder_1d_block:
   _target_: multi_modal_transformers.attention_blocks.attention.StackedEncoder1DBlock
-  num_blocks: 24
+  num_blocks: 8
   encoder_1d_block:
     _target_: multi_modal_transformers.attention_blocks.attention.Encoder1DBlock
     

@@ -90,7 +90,7 @@ def oxe_load_dataset(cfg):
     return iterator
 
 
-def preprocess_batch(batch, text_tokenize_fn, dummy=False):
+def preprocess_batch(batch, text_tokenize_fn, action_head_type="diffusion", dummy=False):
     """
     Preprocess a batch of data.
     """
@@ -108,20 +108,33 @@ def preprocess_batch(batch, text_tokenize_fn, dummy=False):
     gt_action = jnp.take(batch["action"], -1, axis=1)
 
     # create dummy data for diffusion-based model init
-    if dummy:
-        time = jnp.ones((images.shape[0], 1))
-        actions = jnp.take(batch["action"], -1, axis=1)
-        data = {
-                "images": images,
-                "text_tokens": text_tokens,
-                "time": time,
-                "noisy_actions": actions,
-                }
+    if action_head_type=="diffusion":
+        if dummy:
+            time = jnp.ones((images.shape[0], 1))
+            actions = jnp.take(batch["action"], -1, axis=1)
+            data = {
+                    "images": images,
+                    "text_tokens": text_tokens,
+                    "time": time,
+                    "noisy_actions": actions,
+                    }
+        else:
+            data = {
+                    "images": images,
+                    "text_tokens": text_tokens,
+                    }
+    
     else:
-        data = {
-                "images": images,
-                "text_tokens": text_tokens,
-                "gt_action": gt_action,
-                }
+        if dummy:
+            data = {
+                    "images": images,
+                    "text_tokens": text_tokens,
+                    }
+        else:
+            data = {
+                    "images": images,
+                    "text_tokens": text_tokens,
+                    "gt_action": gt_action,
+                    }
 
     return data
