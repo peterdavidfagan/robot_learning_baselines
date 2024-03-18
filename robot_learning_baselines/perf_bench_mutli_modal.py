@@ -42,7 +42,7 @@ from utils.wandb import (
 )
 
 
-def benchmark_inference(model, variables, rngs, input_data, method, num_passes=100):
+def benchmark_inference(cfg, model, variables, rngs, input_data, method, num_passes=100):
     """
     Generate benchmarks for model inference.
     """
@@ -59,7 +59,7 @@ def benchmark_inference(model, variables, rngs, input_data, method, num_passes=1
         inference_time = end - start
         inference_latency.append(inference_time)
         wandb.log({
-                "batch_inference_latency": inference_time
+                f"{cfg.training.batch_size}_batch_inference_latency": inference_time
             })
     
     print("Mean inference time: {}".format(np.mean(inference_latency)))
@@ -107,7 +107,7 @@ def main(cfg: DictConfig) -> None:
     #inspect_model(model, rngs, input_data, method="predict_continuous_action")
     
     # test model inference speed 
-    benchmark_inference(model, variables, rngs, input_data, method="generate_readouts")
+    benchmark_inference(cfg, model, variables, rngs, input_data, method="generate_readouts")
 
 if __name__ == "__main__":
     main()
