@@ -13,6 +13,37 @@ from octo.data.dataset import make_interleaved_dataset, make_single_dataset
 
 import jax.numpy as jnp
 
+def load_transporter_dataset(data_cfg):
+    """Load dataset."""
+    #filepath = Path(__file__).parent.absolute()
+    #dataset_name = data_cfg.name
+    #print(f"Loading dataset {dataset_name} from {filepath}/../data/{dataset_name}")
+    #ds = tfds.builder_from_directory(f"{filepath}/../data/{dataset_name}").as_dataset(split="train")
+    #def transporter_step(step):
+    #    return {"rgbd": tf.concat([
+    #                        tf.cast(step["observation"]["overhead_camera/rgb"][0], dtype=tf.float32), 
+    #                        tf.expand_dims(step["observation"]["overhead_camera/depth"][0], axis=-1)
+    #                        ], axis=-1),
+    #            "pick_pose": step["action"][0][:7],
+    #            "place_pose": step["action"][0][7:],
+    #            "camera_intrinsics": step["camera_intrinsics"][0],
+    #            "camera_extrinsics": step["camera_extrinsics"][0],
+    #            }
+    
+    #def episode_step_to_transition(episode):
+    #    episode[rlds.STEPS] = rlds.transformations.batch(episode[rlds.STEPS], 
+    #            size=2, 
+    #            shift=1, 
+    #            drop_remainder=True).map(transporter_step)
+    #    return episode
+
+    #ds = ds.map(episode_step_to_transition)
+    #ds = ds.flat_map(lambda x: x[rlds.STEPS]) # convert from episodes to steps
+
+    #return ds
+    raise NotImplementedError
+
+
 def oxe_load_single_dataset(cfg):
     dataset_kwargs = make_oxe_dataset_kwargs(
         cfg.dataset,
