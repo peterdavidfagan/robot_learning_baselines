@@ -2,5 +2,5 @@ dtype: float32
 param_dtype: float32
 
 defaults:
-  - pick: resnet_43
-  - place: resnet_43
+  - pick: resnet43
+  - place: resnet43

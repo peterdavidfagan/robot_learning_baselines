@@ -1,0 +1,3 @@
+defaults:
+  - transporter_pick: transporter
+  - transporter_place: transporter
