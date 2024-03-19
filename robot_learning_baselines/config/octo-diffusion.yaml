@@ -1,0 +1,24 @@
+project:
+  base_path: /home/peter/Code/research_projects/robot_learning_baselines
+
+wandb:
+  use: True
+  project: "robot_learning_baselines"
+  entity: "ipab-rad"
+  experiment_name: octo-diffusion
+  tags: ["debugging octo pipeline"]
+  notes: "Debugging octo training pipeline."
+  resume: False
+
+  dataset_visualization:
+    columns:
+      task/language_instruction: "text"
+      observation/image_primary: "image"
+
+
+debug_run: True
+defaults:
+  - architecture/multi_modal_transformer: octo-diffusion
+  - dataset: debug-open-x-embodiment
+  - evaluation: octo-base
+  - training: octo-base

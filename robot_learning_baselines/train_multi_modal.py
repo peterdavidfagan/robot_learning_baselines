@@ -51,9 +51,10 @@ from utils.pipeline import (
 from utils.wandb import (
     init_wandb,
     visualize_dataset,
+    visualize_multi_modal_predictions,
 )
 
-@hydra.main(version_base=None, config_path="./config", config_name="octo-base")
+@hydra.main(version_base=None, config_path="./config", config_name="octo-continuous")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
     assert jax.default_backend() != "cpu" # ensure accelerator is available
@@ -68,10 +69,9 @@ def main(cfg: DictConfig) -> None:
             }
 
     train_data = oxe_load_single_dataset(cfg.dataset) # load dataset for debugging
-    #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only) # load dataset
-    
-    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
     cardinality = 3177 # hardcode while debugging
+    #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only) # load dataset
+    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
     
     if cfg.wandb.use: # optionally initialise wandb
         init_wandb(cfg)
@@ -99,7 +99,7 @@ def main(cfg: DictConfig) -> None:
     inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.action_heads.forward_method)
     
 
-    # for now due to api we need to generate time + noisy actions, fix this in future
+    # for now due to api we need to generate time + noisy actions data, this should be fixed in future
     input_data = preprocess_batch(
             batch, 
             text_tokenize_fn, 
@@ -117,7 +117,7 @@ def main(cfg: DictConfig) -> None:
         )
     
     # TODO: remove debug run once finished debugging
-    if cfg.debug_run:
+    if cfg.debug_run: # try overfitting a single sample
         if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
                 data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
         elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
@@ -162,6 +162,7 @@ def main(cfg: DictConfig) -> None:
                 raise NotImplementedError
 
             loss = train_state.metrics.compute()["loss"]
+            print(loss)
             train_state = train_state.replace(metrics=train_state.metrics.empty())
 
             if cfg.wandb.use:
@@ -169,6 +170,14 @@ def main(cfg: DictConfig) -> None:
                             "loss": loss,
                             "learning_rate": lr_scheduler(train_state.step),
                         })
+
+            visualize_multi_modal_predictions(
+                    train_state, 
+                    model, 
+                    {key: data[key] for key in ["text_tokens", "images"]}, 
+                    data["gt_action"], 
+                    0, 
+                    method="predict_continuous_action") # hardcode while debugging
     
     else:
         for epoch in tqdm(range(cfg.training.num_epochs), leave=False):

@@ -188,3 +188,22 @@ def visualize_transporter_predictions(cfg, transporter, raw_batch, epoch):
     
     table = wandb.Table(data=data, columns=column_names)
     wandb.log({f"model_predictions_epoch_{epoch}": table})
+
+def visualize_multi_modal_predictions(train_state, model, input_data, target, epoch, method):
+    """
+    Create table of model predictions.
+    """
+    predictions = model.apply(
+            {"params": train_state.params},
+                **input_data,
+                rngs=train_state.rngs,
+                method=method,
+            ).__array__().copy()
+    
+    data = []
+    for entry in zip(predictions, target):
+        data.append(entry)
+
+    table = wandb.Table(data=data, columns=["prediction", "target"])
+    wandb.log({f"model_predictions_epoch_{epoch}": table})
+

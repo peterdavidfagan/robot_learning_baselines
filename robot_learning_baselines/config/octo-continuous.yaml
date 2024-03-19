@@ -5,7 +5,7 @@ wandb:
   use: True
   project: "robot_learning_baselines"
   entity: "ipab-rad"
-  experiment_name: octo-debug
+  experiment_name: octo-continuous
   tags: ["debugging octo pipeline"]
   notes: "Debugging octo training pipeline."
   resume: False
@@ -18,7 +18,7 @@ wandb:
 
 debug_run: True
 defaults:
-  - architecture/multi_modal_transformer: octo-base 
+  - architecture/multi_modal_transformer: octo-continuous
   - dataset: debug-open-x-embodiment
   - evaluation: octo-base
   - training: octo-base
