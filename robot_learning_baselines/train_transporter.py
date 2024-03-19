@@ -82,7 +82,8 @@ def main(cfg: DictConfig) -> None:
             pick_model_key,
             pick_optimizer,
             )
-    # inspect_transporter_model()
+    data = {"rgbd": rgbd_normalized}
+    inspect_model(pick_model, {"params": pick_model_key}, data)
 
     place_train_state = create_transporter_place_train_state(
             rgbd_normalized,
@@ -91,7 +92,8 @@ def main(cfg: DictConfig) -> None:
             place_model_key,
             place_optimizer,
             )
-    # inspect_transporter_model()
+    data = {"rgbd": rgbd_normalized, "rgbd_crop": rgbd_crop_normalized}
+    inspect_model(place_model, {"params": place_model_key}, data)
 
     transporter = Transporter(
             pick_model_state = pick_train_state,
