@@ -50,7 +50,7 @@ from utils.pipeline import (
 
 from utils.wandb import (
     init_wandb,
-    visualize_dataset,
+    visualize_transporter_dataset,
 )
 
 
@@ -64,6 +64,17 @@ def main(cfg: DictConfig) -> None:
     
     train_data = load_transporter_dataset(cfg.dataset)
     
+    if cfg.wandb.use:
+        init_wandb(cfg)
+        batch = next(train_data.as_numpy_iterator())
+        (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
+        batch = {
+                "rgbd": rgbd,
+                "rgbd_crop": rgbd_crop,
+                "pixels": pixels,
+                }
+        visualize_transporter_dataset(cfg, batch)
+
     pick_chkpt_manager = setup_checkpointing(cfg.training.transporter_pick) # set up model checkpointing   
     place_chkpt_manager = setup_checkpointing(cfg.training.transporter_place) # set up model checkpointing 
     

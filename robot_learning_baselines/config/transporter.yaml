@@ -11,6 +11,13 @@ wandb:
   resume: False
 
   dataset_visualization:
+    columns:
+      rgb: "image"
+      depth: "image"
+      rgb_crop: "image"
+      depth_crop: "image"
+      pick_target: "image"
+      place_target: "image"
 
 debug_run: True
 defaults:
