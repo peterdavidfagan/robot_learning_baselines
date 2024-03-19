@@ -18,8 +18,14 @@ wandb:
       depth_crop: "image"
       pick_target: "image"
       place_target: "image"
+  
+  prediction_visualization:
+    columns:
+      pick_target: "image"
+      place_target: "image"
+      pick_heatmap: "image"
+      place_heatmap: "image"
 
-debug_run: True
 defaults:
   - architecture/transporter: transporter
   - dataset: debug-transporter

@@ -51,6 +51,7 @@ from utils.pipeline import (
 from utils.wandb import (
     init_wandb,
     visualize_transporter_dataset,
+    visualize_transporter_predictions,
 )
 
 
@@ -63,7 +64,8 @@ def main(cfg: DictConfig) -> None:
     pick_model_key, place_model_key = jax.random.split(key, 2)
     
     train_data = load_transporter_dataset(cfg.dataset)
-    
+    cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
+
     if cfg.wandb.use:
         init_wandb(cfg)
         batch = next(train_data.as_numpy_iterator())
@@ -87,6 +89,14 @@ def main(cfg: DictConfig) -> None:
 
     batch = next(train_data.as_numpy_iterator())
     (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
+    eval_data = {
+            "rgbd": rgbd,
+            "rgbd_crop": rgbd_crop,
+            "rgbd_normalized": rgbd_normalized,
+            "rgbd_crop_normalized": rgbd_crop_normalized,
+            "pixels": pixels,
+            "ids": ids,
+            }
     pick_train_state = create_transporter_train_state(
             rgbd_normalized,
             pick_model,
@@ -110,6 +120,53 @@ def main(cfg: DictConfig) -> None:
             pick_model_state = pick_train_state,
             place_model_state = place_train_state,
             )
+
+    # train both pick/place models together
+    for epoch in range(cfg.training.transporter_pick.num_epochs):
+        
+        # epoch metrics
+        metrics_history = {
+            "loss": [],
+        }
+
+        # shuffle dataset
+        train_data = train_data.shuffle(10)
+        train_data_iter = train_data.as_numpy_iterator()
+        
+        # TODO: get dataset size and use tqdm
+        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
+            (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
+            
+            # compute ce loss for pick network and update pick network
+            pick_train_state, pick_loss = pick_train_step(transporter.pick_model_state, rgbd_normalized, ids[0])
+            transporter = transporter.replace(pick_model_state=pick_train_state) 
+            
+            # compute ce loss for place networks and update place network
+            place_train_state, place_loss = place_train_step(
+                    transporter.place_model_state,
+                    rgbd_normalized,
+                    rgbd_crop_normalized, 
+                    ids[1],
+                    )
+            transporter = transporter.replace(place_model_state=place_train_state)
+            
+
+        # report epoch metrics (optionally add to wandb)
+        pick_loss_epoch = transporter.pick_model_state.metrics.compute()
+        place_loss_epoch = transporter.place_model_state.metrics.compute()
+        print(f"Epoch {epoch}: pick_loss: {pick_loss_epoch}, place_loss: {place_loss_epoch}")
+        
+        if cfg.wandb.use:
+            wandb.log({
+                "pick_loss": pick_loss_epoch,
+                "place_loss": place_loss_epoch,
+                "epoch": epoch
+                })
+            visualize_transporter_predictions(cfg, transporter, eval_data, epoch)
+
+        # reset metrics after epoch
+        transporter.pick_model_state.replace(metrics=pick_train_state.metrics.empty())
+        transporter.place_model_state.replace(metrics=place_train_state.metrics.empty())
 
 
 if __name__ == "__main__":
