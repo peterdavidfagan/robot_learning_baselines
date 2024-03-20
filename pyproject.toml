@@ -1,7 +1,7 @@
 [project]
 name = "robot_learning_baselines"
 version = "0.0.0"
-description = "A set of baseline models with supporting training/evaluation scripts for a number of robot learning datasets (work is still being ported to this repo)."
+description = "A set of baseline models with supporting training/evaluation scripts for a number of robot learning datasets."
 authors = [
 	{ name = "Peter David Fagan", email = "peterdavidfagan@gmail.com" }
 ]
@@ -10,7 +10,7 @@ readme = "README.md"
 [tool.poetry]
 name = "robot_learning_baselines"
 version = "0.0.0"
-description = "A set of baseline models with supporting training/evaluation scripts for a number of robot learning datasets (work is still being ported to this repo)."
+description = "A set of baseline models with supporting training/evaluation scripts for a number of robot learning datasets."
 license = "Apache-2.0"
 authors = [
 	"Peter David Fagan <peterdavidfagan@gmail.com>"
