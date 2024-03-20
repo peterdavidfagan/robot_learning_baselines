@@ -11,6 +11,7 @@ from octo.data.oxe import make_oxe_dataset_kwargs, make_oxe_dataset_kwargs_and_w
 from octo.data.dataset import make_interleaved_dataset, make_single_dataset
 
 # deep learning framework
+import jax.numpy as jnp
 import optax
 import orbax.checkpoint as ocp
 
@@ -53,26 +54,59 @@ def setup_checkpointing(cfg):
     return chkpt_manager
 
 
-def create_optimizer(cfg):
+def create_optimizer(cfg, lr_schedule="reciprocal_sqrt"):
     """
     Instantiate opitmizer based on config.
-
-    For now only one option is supported.
     """
 
-    learning_rate_scheduler = optax.warmup_cosine_decay_schedule(
-        init_value=cfg.training.initial_lr,
-        peak_value=cfg.training.peak_lr,
-        warmup_steps=cfg.training.warmup_epochs * cfg.training.steps_per_epoch,
-        decay_steps=(cfg.training.num_epochs - cfg.training.warmup_epochs)
-        * cfg.training.steps_per_epoch,
-        end_value=cfg.training.end_lr,
-    )
+    if lr_schedule=="reciprocal_sqrt":
+        
+        def reciprocal_sqrt_schedule(
+                init_value,
+                peak_value,
+                warmup_steps,
+                ) -> optax.Schedule:
+            """
+            Constructs reciprocal sqrt schedule.
+            """
+            def schedule(count):
+                if count <= warmup_steps:
+                    lr_value = (peak_value - init_value) * (count / warmup_steps)
+                else:
+                    lr_value = peak_value * (1 / jnp.sqrt(count - warmup_steps))
 
-    optimizer = optax.chain(
-        optax.clip_by_global_norm(cfg.training.max_grad_norm),
-        optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
-    )
+                return lr_value
+            
+            return schedule
+
+        learning_rate_scheduler = reciprocal_sqrt_schedule(
+                init_value = cfg.training.initial_lr,
+                peak_value=cfg.training.peak_lr,
+                warmup_steps = cfg.training.warmup_steps
+                )
+
+        optimizer = optax.chain(
+            optax.clip_by_global_norm(cfg.training.max_grad_norm),
+            optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
+        )
+
+    elif lr_schedule=="cosine_decay":
+        learning_rate_scheduler = optax.warmup_cosine_decay_schedule(
+            init_value=cfg.training.initial_lr,
+            peak_value=cfg.training.peak_lr,
+            warmup_steps=cfg.training.warmup_epochs * cfg.training.steps_per_epoch,
+            decay_steps=(cfg.training.num_epochs - cfg.training.warmup_epochs)
+            * cfg.training.steps_per_epoch,
+            end_value=cfg.training.end_lr,
+        )
+
+        optimizer = optax.chain(
+            optax.clip_by_global_norm(cfg.training.max_grad_norm),
+            optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
+        )
+
+    else:
+        raise NotImplementedError
     
     return optimizer, learning_rate_scheduler
 

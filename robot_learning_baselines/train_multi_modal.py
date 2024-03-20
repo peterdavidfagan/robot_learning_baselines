@@ -52,6 +52,7 @@ from utils.wandb import (
     init_wandb,
     visualize_dataset,
     visualize_multi_modal_predictions,
+    track_gradients,
 )
 
 @hydra.main(version_base=None, config_path="./config", config_name="octo-continuous")
@@ -119,7 +120,7 @@ def main(cfg: DictConfig) -> None:
     # TODO: remove debug run once finished debugging
     if cfg.debug_run: # try overfitting a single sample
         if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
-                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+            data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
         elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
             data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
         else:
@@ -141,9 +142,10 @@ def main(cfg: DictConfig) -> None:
                                 axis=0)
 
         loss = 1e3
+        i = 0
         while loss > 1e-2:
             if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
-                train_state = train_state.continuous_train_step(
+                train_state, grads = train_state.continuous_train_step(
                         model, 
                         train_state, 
                         data["text_tokens"], 
@@ -161,6 +163,7 @@ def main(cfg: DictConfig) -> None:
             else:
                 raise NotImplementedError
 
+            i += 1
             loss = train_state.metrics.compute()["loss"]
             print(loss)
             train_state = train_state.replace(metrics=train_state.metrics.empty())
@@ -170,14 +173,16 @@ def main(cfg: DictConfig) -> None:
                             "loss": loss,
                             "learning_rate": lr_scheduler(train_state.step),
                         })
-
-            visualize_multi_modal_predictions(
-                    train_state, 
-                    model, 
-                    {key: data[key] for key in ["text_tokens", "images"]}, 
-                    data["gt_action"], 
-                    0, 
-                    method="predict_continuous_action") # hardcode while debugging
+            
+            if i % 10 == 0:
+                track_gradients(cfg, grads)
+                visualize_multi_modal_predictions(
+                        train_state, 
+                        model, 
+                        {key: data[key] for key in ["text_tokens", "images"]}, 
+                        data["gt_action"], 
+                        0, 
+                        method="predict_continuous_action") # hardcode while debugging
     
     else:
         for epoch in tqdm(range(cfg.training.num_epochs), leave=False):

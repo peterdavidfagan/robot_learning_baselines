@@ -14,13 +14,13 @@ stacked_encoder_1d_block:
     
     dropout:
       _target_: flax.linen.Dropout
-      rate: 0.1
+      rate:  ${architecture.multi_modal_transformer.dropout_rate}
     
     self_attention:
       _target_: flax.linen.SelfAttention
       num_heads: 12
-      qkv_features: 768
-      dropout_rate: 0.1
+      qkv_features: ${architecture.multi_modal_transformer.token_embedding_dim}
+      dropout_rate: ${architecture.multi_modal_transformer.attention_dropout_rate}
       decode: false
       kernel_init:
         _target_: flax.linen.initializers.he_normal
@@ -47,11 +47,11 @@ stacked_encoder_1d_block:
       
       norm:
         _target_: flax.linen.Dropout
-        rate: 0.1
+        rate: ${architecture.multi_modal_transformer.dropout_rate}
       
       dense_out:
         _target_: flax.linen.Dense
-        features: 768
+        features: ${architecture.multi_modal_transformer.token_embedding_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true

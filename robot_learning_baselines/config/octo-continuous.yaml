@@ -15,6 +15,13 @@ wandb:
       task/language_instruction: "text"
       observation/image_primary: "image"
 
+  model_gradients:
+    columns:
+      param_name: null
+      mean: null
+      variance: null
+      max_val: null
+      min_val: null
 
 debug_run: True
 defaults:

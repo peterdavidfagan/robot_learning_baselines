@@ -17,7 +17,7 @@ continuous_action_head:
     
     dot_product_attention:
       _target_: flax.linen.MultiHeadDotProductAttention
-      num_heads: 3
+      num_heads: 12
       kernel_init:
         _target_: flax.linen.initializers.he_normal
     
@@ -31,7 +31,7 @@ continuous_action_head:
       _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
       dense:
         _target_: flax.linen.Dense
-        features: 768
+        features: ${architecture.multi_modal_transformer.token_embedding_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
@@ -44,11 +44,11 @@ continuous_action_head:
       
       norm:
         _target_: flax.linen.Dropout
-        rate: 0.1
+        rate: ${architecture.multi_modal_transformer.dropout_rate}
       
       dense_out:
         _target_: flax.linen.Dense
-        features: 768
+        features: ${architecture.multi_modal_transformer.token_embedding_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
@@ -56,33 +56,12 @@ continuous_action_head:
           _target_: flax.linen.initializers.normal
 
     
-  mlp_block:
-    _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
-    dense:
-      _target_: flax.linen.Dense
-      features: 768
-      kernel_init:
-        _target_: flax.linen.initializers.he_normal
-      use_bias: true
-      bias_init:
-        _target_: flax.linen.initializers.normal
-    
-    activation:
-      _partial_: true
-      _target_: flax.linen.relu
-    
-    norm:
-      _target_: flax.linen.Dropout
-      rate: 0.1
-    
-    dense_out:
-      _target_: flax.linen.Dense
-      features: ${architecture.multi_modal_transformer.action_heads.action_space_dim}
-      kernel_init:
-        _target_: flax.linen.initializers.he_normal
-      use_bias: true
-      bias_init:
-        _target_: flax.linen.initializers.normal
-  
-
+  dense:
+    _target_: flax.linen.Dense
+    features: ${architecture.multi_modal_transformer.action_heads.action_space_dim}
+    kernel_init:
+      _target_: flax.linen.initializers.he_normal
+    use_bias: true
+    bias_init:
+      _target_: flax.linen.initializers.normal
 

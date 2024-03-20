@@ -5,9 +5,13 @@ param_dtype: float32
 tokens_per_task_description: 16
 tokens_per_image: 75
 tokens_per_readout: 4
-token_embedding_dim: 768 
 num_observation_blocks: 2
 input_sequence: "[TaskDescriptionPrefix{16}] [Image{25};Readout{4}]*2"
+
+# global architecture params
+token_embedding_dim: 768 
+dropout_rate: 0.0
+attention_dropout_rate: 0.0
 
 defaults:
   - tokenizers/text: t5_base

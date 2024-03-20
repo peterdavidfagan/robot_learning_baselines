@@ -5,7 +5,7 @@ encoder:
   normalize: True # normalizes the input image pixel values to range [-1, 1]
   position_interval: 128 # number of discrete values for encoding patch positions
   rng_collection: patch_encoding # pseudo-random number parameter name
-  embedding_dim: 768
+  embedding_dim: ${architecture.multi_modal_transformer.token_embedding_dim}
 
   # positional embedding layers
 
@@ -13,7 +13,7 @@ encoder:
     _target_: flax.linen.Embed
     name: "image_row_position_embedding"
     num_embeddings: ${architecture.multi_modal_transformer.tokenizers.images.encoder.position_interval}
-    features: 768
+    features: ${architecture.multi_modal_transformer.token_embedding_dim}
     dtype: ${architecture.multi_modal_transformer.dtype}
     param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     embedding_init:
@@ -27,7 +27,7 @@ encoder:
     _target_: flax.linen.Embed
     name: "image_col_position_embedding"
     num_embeddings: ${architecture.multi_modal_transformer.tokenizers.images.encoder.position_interval}
-    features: 768
+    features: ${architecture.multi_modal_transformer.token_embedding_dim}
     dtype: ${architecture.multi_modal_transformer.dtype}
     param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     embedding_init:
@@ -95,7 +95,7 @@ encoder:
     # output_layer
     output_dense:
       _target_: flax.linen.Dense
-      features: 768
+      features: ${architecture.multi_modal_transformer.token_embedding_dim}
       kernel_init:
         _target_: flax.linen.initializers.he_normal
         dtype: ${architecture.multi_modal_transformer.param_dtype}

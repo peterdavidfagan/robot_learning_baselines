@@ -44,6 +44,23 @@ def init_wandb(cfg, resume=False):
 
     # define model checkpoint directory
 
+def track_gradients(cfg, grads):
+    """Track gradients of model parameters."""
+    table_config = dict(cfg.wandb.model_gradients.columns)
+    column_names = list(table_config.keys())
+    
+    data = []
+    params = jax.tree_util.tree_leaves_with_path(grads)
+    for param_name, grads in params:
+        param_name = jax.tree_util.keystr(param_name).replace("'", "").replace("[", "").replace("]", "_")
+        mean = jnp.mean(grads)
+        variance = jnp.var(grads)
+        max_val = jnp.max(grads)
+        min_val = jnp.min(grads)
+        data.append([param_name, mean, variance, max_val, min_val])
+
+    table = wandb.Table(data=data, columns=column_names)    
+    wandb.log({"model_gradients": table})
 
 def visualize_dataset(cfg, raw_batch):
     """
@@ -199,11 +216,12 @@ def visualize_multi_modal_predictions(train_state, model, input_data, target, ep
                 rngs=train_state.rngs,
                 method=method,
             ).__array__().copy()
-    
+
     data = []
     for entry in zip(predictions, target):
-        data.append(entry)
-
-    table = wandb.Table(data=data, columns=["prediction", "target"])
-    wandb.log({f"model_predictions_epoch_{epoch}": table})
+        for dimension in range(entry[0].shape[0]):
+            data.append([dimension, entry[0][dimension], entry[1][dimension]])
+    
+    table = wandb.Table(data=data, columns=["action_dim", "prediction", "target"])
+    wandb.log({f"model_predictions": table}, commit=False)
 
