@@ -79,7 +79,7 @@ def main(cfg: DictConfig) -> None:
         visualize_dataset(cfg, next(train_data.as_numpy_iterator()))
     
     chkpt_manager = setup_checkpointing(cfg.training) # set up model checkpointing   
-    optimizer, lr_scheduler = create_optimizer(cfg) # instantiate model optimizer
+    optimizer, lr_scheduler = create_optimizer(cfg, lr_schedule="cosine_decay") # instantiate model optimizer
     model = Octo(cfg.architecture.multi_modal_transformer) # instantiate model
     text_tokenizer = instantiate(cfg.architecture.multi_modal_transformer.tokenizers.text.tokenizer) # instantiate text tokenizer
     text_tokenize_fn = partial(text_tokenizer, 
@@ -126,20 +126,20 @@ def main(cfg: DictConfig) -> None:
         else:
             raise NotImplementedError
         
-        data["text_tokens"] = np.repeat(
-                                np.expand_dims(data["text_tokens"][0], axis=0), 
-                                cfg.training.batch_size, 
-                                axis=0)
+        #data["text_tokens"] = np.repeat(
+        #                        np.expand_dims(data["text_tokens"][0], axis=0), 
+        #                        cfg.training.batch_size, 
+        #                        axis=0)
         
-        data["images"] = np.repeat(
-                            np.expand_dims(data["images"][0], axis=0), 
-                            cfg.training.batch_size, 
-                            axis=0)
+        #data["images"] = np.repeat(
+        #                    np.expand_dims(data["images"][0], axis=0), 
+        #                    cfg.training.batch_size, 
+        #                    axis=0)
         
-        data["gt_action"] = np.repeat(
-                                np.expand_dims(data["gt_action"][0], axis=0), 
-                                cfg.training.batch_size,
-                                axis=0)
+        #data["gt_action"] = np.repeat(
+        #                        np.expand_dims(data["gt_action"][0], axis=0), 
+        #                        cfg.training.batch_size,
+        #                        axis=0)
 
         loss = 1e3
         i = 0

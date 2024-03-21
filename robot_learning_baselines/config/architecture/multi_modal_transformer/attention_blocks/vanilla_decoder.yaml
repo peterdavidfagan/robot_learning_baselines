@@ -9,26 +9,26 @@ stacked_encoder_1d_block:
       epsilon: 1e-6
       reduction_axes: [1]
       feature_axes: [-1]
-      dtype:
-      param_dtype:
+      dtype: ${architecture.multi_modal_transformer.dtype}
+      param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     
     dropout:
       _target_: flax.linen.Dropout
       rate:  ${architecture.multi_modal_transformer.dropout_rate}
     
     self_attention:
-      _target_: flax.linen.SelfAttention
+      _target_: flax.linen.MultiHeadDotProductAttention
       num_heads: 12
       qkv_features: ${architecture.multi_modal_transformer.token_embedding_dim}
       dropout_rate: ${architecture.multi_modal_transformer.attention_dropout_rate}
       decode: false
       kernel_init:
-        _target_: flax.linen.initializers.he_normal
+        _target_: flax.linen.initializers.xavier_uniform
       use_bias: true
       bias_init:
         _target_: flax.linen.initializers.normal
-      dtype: float32
-      param_dtype: float32
+      dtype: ${architecture.multi_modal_transformer.dtype}
+      param_dtype: ${architecture.multi_modal_transformer.param_dtype}
     
     mlp_block:
       _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
@@ -43,7 +43,7 @@ stacked_encoder_1d_block:
       
       activation:
         _partial_: true
-        _target_: flax.linen.relu
+        _target_: flax.linen.gelu
       
       norm:
         _target_: flax.linen.Dropout

@@ -101,7 +101,15 @@ def create_optimizer(cfg, lr_schedule="reciprocal_sqrt"):
         )
 
         optimizer = optax.chain(
-            optax.clip_by_global_norm(cfg.training.max_grad_norm),
+            optax.clip(1.0),
+            #optax.clip_by_global_norm(cfg.training.max_grad_norm),
+            optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
+        )
+    
+    elif lr_schedule=="constant":
+        learning_rate_scheduler = optax.constant_schedule(cfg.training.initial_lr)
+        optimizer = optax.chain(
+            optax.clip(cfg.training.max_grad_norm),
             optax.adamw(learning_rate_scheduler, weight_decay=cfg.training.weight_decay),
         )
 
