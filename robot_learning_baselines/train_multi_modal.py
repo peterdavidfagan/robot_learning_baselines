@@ -55,7 +55,7 @@ from utils.wandb import (
     track_gradients,
 )
 
-@hydra.main(version_base=None, config_path="./config", config_name="octo-continuous")
+@hydra.main(version_base=None, config_path="./config", config_name="octo-diffusion")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
     assert jax.default_backend() != "cpu" # ensure accelerator is available
@@ -126,20 +126,6 @@ def main(cfg: DictConfig) -> None:
         else:
             raise NotImplementedError
         
-        #data["text_tokens"] = np.repeat(
-        #                        np.expand_dims(data["text_tokens"][0], axis=0), 
-        #                        cfg.training.batch_size, 
-        #                        axis=0)
-        
-        #data["images"] = np.repeat(
-        #                    np.expand_dims(data["images"][0], axis=0), 
-        #                    cfg.training.batch_size, 
-        #                    axis=0)
-        
-        #data["gt_action"] = np.repeat(
-        #                        np.expand_dims(data["gt_action"][0], axis=0), 
-        #                        cfg.training.batch_size,
-        #                        axis=0)
 
         loss = 1e3
         i = 0
@@ -153,7 +139,7 @@ def main(cfg: DictConfig) -> None:
                         data["gt_action"],
                         )
             elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
-                train_state = train_state.diffusion_train_step(
+                train_state, grads = train_state.diffusion_train_step(
                         model, 
                         train_state, 
                         data["text_tokens"], 
@@ -176,13 +162,13 @@ def main(cfg: DictConfig) -> None:
             
             if i % 10 == 0:
                 track_gradients(cfg, grads)
-                visualize_multi_modal_predictions(
-                        train_state, 
-                        model, 
-                        {key: data[key] for key in ["text_tokens", "images"]}, 
-                        data["gt_action"], 
-                        0, 
-                        method="predict_continuous_action") # hardcode while debugging
+                #visualize_multi_modal_predictions(
+                #        train_state, 
+                #        model, 
+                #        {key: data[key] for key in ["text_tokens", "images"]}, 
+                #        data["gt_action"], 
+                #        0, 
+                #        method=cfg.architecture.multi_modal_transformer.action_heads.forward_method) # hardcode while debugging
     
     else:
         for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
