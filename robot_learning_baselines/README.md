@@ -6,7 +6,7 @@
 
 # Running Individual Experiments
 
-All experiments are tracked on Weights and Biases in the [robot_learning_baselines project](https://wandb.ai/ipab-rad/robot_learning_baselines).
+All experiments are tracked on Weights and Biases in the [robot_learning_baselines](https://wandb.ai/ipab-rad/robot_learning_baselines) project.
 
 To train a multi modal model run:
 
@@ -28,3 +28,5 @@ wandb sweep <sweep.yaml>
 wandb agent <wandb generated serial code>
 ```
 
+# Deploying Models
+Details for deploying models using the [ros2_robotics_research_toolkit](https://github.com/peterdavidfagan/ros2_robotics_research_toolkit) to be added in future.
