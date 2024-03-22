@@ -41,9 +41,9 @@ spec:
               mountPath: "/app/data"
           resources:
             limits:
-              cpu: "48"
+              cpu: 48
               nvidia.com/gpu: 1
-              memory: "64Gi"
+              memory: 64Gi
       initContainers:
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.0.0
@@ -61,9 +61,9 @@ spec:
               readOnly: true
           resources:
             limits:
-              cpu: "48"
-              nvidia.com/gpu: 0
-              memory: "64Gi"
+              cpu: 48
+              nvidia.com/gpu: 1
+              memory: 64Gi
           securityContext:
             runAsUser: 65533
       securityContext:
