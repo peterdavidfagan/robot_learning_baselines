@@ -1,10 +1,13 @@
-# Downloading Datasets
 
-## OXE 
+# Local Setup 
 
-## Tranporter Network Datasets
+## Downloading Datasets
 
-# Running Individual Experiments
+### OXE 
+
+### Tranporter Network Datasets
+
+## Running Individual Experiments
 
 All experiments are tracked on Weights and Biases in the [robot_learning_baselines](https://wandb.ai/ipab-rad/robot_learning_baselines) project.
 
@@ -20,13 +23,17 @@ To train transporter network run:
 python train_transporter.py +config=<config_filename>
 ```
 
-# Running Hyperparameter Sweep
+## Running Hyperparameter Sweep
 
 ```bash
 cd hyper_parameter_tuning
 wandb sweep <sweep.yaml>
 wandb agent <wandb generated serial code>
 ```
+
+# Kubernetes Setup
+
+Details to be added.
 
 # Deploying Models
 Details for deploying models using the [ros2_robotics_research_toolkit](https://github.com/peterdavidfagan/ros2_robotics_research_toolkit) to be added in future.
