@@ -13,6 +13,10 @@ token_embedding_dim: 768
 dropout_rate: 0.0
 attention_dropout_rate: 0.0
 
+# action head prediction settings
+forward_method: predict_continuous_action
+prediction_type: continuous
+
 defaults:
   - tokenizers/text: t5_base
   - tokenizers/images: gato_resnet

@@ -2,66 +2,67 @@ forward_method: predict_continuous_action
 type: continuous
 action_space_dim: 7
 max_action: 3
-diffusion_action_head: null
 
-continuous_action_head:
-  _target_: multi_modal_transformers.action_heads.continuous.ContinuousActionHead
-  
-  max_action: ${config.architecture.multi_modal_transformer.action_heads.max_action}
-    
-  attention_pooling:
-    _target_: multi_modal_transformers.attention_blocks.attention.MultiHeadAttentionPooling
-    query_map_input:
-      kernel_init:
-        _target_: flax.linen.initializers.he_normal
-    
-    dot_product_attention:
-      _target_: flax.linen.MultiHeadDotProductAttention
-      num_heads: 12
-      kernel_init:
-        _target_: flax.linen.initializers.he_normal
-    
-    layer_norm: 
-      _target_: flax.linen.LayerNorm
-      epsilon: 1e-6
-      reduction_axes: [1]
-      feature_axes: [-1]
-    
-    mlp_block:
-      _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+heads:
+  - name: continuous_action_head
+    module:
+      _target_: multi_modal_transformers.action_heads.continuous.ContinuousActionHead
+      
+      max_action: ${config.architecture.multi_modal_transformer.action_heads.max_action}
+        
+      attention_pooling:
+        _target_: multi_modal_transformers.attention_blocks.attention.MultiHeadAttentionPooling
+        query_map_input:
+          kernel_init:
+            _target_: flax.linen.initializers.he_normal
+        
+        dot_product_attention:
+          _target_: flax.linen.MultiHeadDotProductAttention
+          num_heads: 12
+          kernel_init:
+            _target_: flax.linen.initializers.he_normal
+        
+        layer_norm: 
+          _target_: flax.linen.LayerNorm
+          epsilon: 1e-6
+          reduction_axes: [1]
+          feature_axes: [-1]
+        
+        mlp_block:
+          _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
+          dense:
+            _target_: flax.linen.Dense
+            features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
+            kernel_init:
+              _target_: flax.linen.initializers.he_normal
+            use_bias: true
+            bias_init:
+              _target_: flax.linen.initializers.normal
+          
+          activation:
+            _partial_: true
+            _target_: flax.linen.relu
+          
+          norm:
+            _target_: flax.linen.Dropout
+            rate: ${config.architecture.multi_modal_transformer.dropout_rate}
+          
+          dense_out:
+            _target_: flax.linen.Dense
+            features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
+            kernel_init:
+              _target_: flax.linen.initializers.he_normal
+            use_bias: true
+            bias_init:
+              _target_: flax.linen.initializers.normal
+
+        
       dense:
         _target_: flax.linen.Dense
-        features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
+        features: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
         bias_init:
           _target_: flax.linen.initializers.normal
-      
-      activation:
-        _partial_: true
-        _target_: flax.linen.relu
-      
-      norm:
-        _target_: flax.linen.Dropout
-        rate: ${config.architecture.multi_modal_transformer.dropout_rate}
-      
-      dense_out:
-        _target_: flax.linen.Dense
-        features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
-        kernel_init:
-          _target_: flax.linen.initializers.he_normal
-        use_bias: true
-        bias_init:
-          _target_: flax.linen.initializers.normal
-
-    
-  dense:
-    _target_: flax.linen.Dense
-    features: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
-    kernel_init:
-      _target_: flax.linen.initializers.he_normal
-    use_bias: true
-    bias_init:
-      _target_: flax.linen.initializers.normal
 

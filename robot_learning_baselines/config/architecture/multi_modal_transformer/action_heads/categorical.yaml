@@ -1,10 +1,17 @@
 action_space_dim: 7
+num_bins: 256
+max_action: 5
 heads:
-  - categorical_action_head:
+
+  - name: categorical_action_head
+    module:
       _target_: multi_modal_transformers.action_heads.categorical.CategoricalActionHead
+      num_bins: ${config.architecture.multi_modal_transformer.action_heads.num_bins}
+      max_action: ${config.architecture.multi_modal_transformer.action_heads.max_action}
+      action_space_dim: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
       dense:
         _target_: flax.linen.Dense
-        features: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
+        features: ${config.architecture.multi_modal_transformer.action_heads.num_bins}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
