@@ -112,7 +112,7 @@ diffusion_action_head:
       
       dense_out:
         _target_: flax.linen.Dense
-        features: ${architecture.multi_modal_transformer.action_heads.action_space_dim}
+        features: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true

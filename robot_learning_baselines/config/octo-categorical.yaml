@@ -5,7 +5,7 @@ wandb:
   use: True
   project: "robot_learning_baselines"
   entity: "ipab-rad"
-  experiment_name: octo-continuous
+  experiment_name: octo-categorical
   tags: ["debugging octo pipeline"]
   notes: "Debugging octo training pipeline."
   resume: False

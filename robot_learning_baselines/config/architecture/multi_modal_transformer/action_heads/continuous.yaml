@@ -7,7 +7,7 @@ diffusion_action_head: null
 continuous_action_head:
   _target_: multi_modal_transformers.action_heads.continuous.ContinuousActionHead
   
-  max_action: ${architecture.multi_modal_transformer.action_heads.max_action}
+  max_action: ${config.architecture.multi_modal_transformer.action_heads.max_action}
     
   attention_pooling:
     _target_: multi_modal_transformers.attention_blocks.attention.MultiHeadAttentionPooling
@@ -31,7 +31,7 @@ continuous_action_head:
       _target_: multi_modal_transformers.attention_blocks.attention.MLPBlock
       dense:
         _target_: flax.linen.Dense
-        features: ${architecture.multi_modal_transformer.token_embedding_dim}
+        features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
@@ -44,11 +44,11 @@ continuous_action_head:
       
       norm:
         _target_: flax.linen.Dropout
-        rate: ${architecture.multi_modal_transformer.dropout_rate}
+        rate: ${config.architecture.multi_modal_transformer.dropout_rate}
       
       dense_out:
         _target_: flax.linen.Dense
-        features: ${architecture.multi_modal_transformer.token_embedding_dim}
+        features: ${config.architecture.multi_modal_transformer.token_embedding_dim}
         kernel_init:
           _target_: flax.linen.initializers.he_normal
         use_bias: true
@@ -58,7 +58,7 @@ continuous_action_head:
     
   dense:
     _target_: flax.linen.Dense
-    features: ${architecture.multi_modal_transformer.action_heads.action_space_dim}
+    features: ${config.architecture.multi_modal_transformer.action_heads.action_space_dim}
     kernel_init:
       _target_: flax.linen.initializers.he_normal
     use_bias: true
