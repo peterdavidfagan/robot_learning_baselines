@@ -55,11 +55,13 @@ from utils.wandb import (
 )
 
 
-@hydra.main(version_base=None, config_path="./config", config_name="transporter")
+@hydra.main(version_base=None, config_path=".")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
-    assert jax.default_backend() != "cpu" # ensure accelerator is available
     
+    assert jax.default_backend() != "cpu" # ensure accelerator is available
+    cfg = cfg["config"] # some hacky and wacky stuff from hydra (TODO: revise)
+
     key = random.PRNGKey(0)
     pick_model_key, place_model_key = jax.random.split(key, 2)
     

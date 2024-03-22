@@ -1,0 +1,17 @@
+program: ../train_multi_modal.py
+project: robot_learning_baselines
+entity: ipab-rad
+name: placeholder_sweep
+method: grid
+metric:
+  goal: minimize
+  name: loss
+parameters:
+  architecture.multi_modal_transformer.tokenizers.images.encoder.patch_size:
+      values: [70, 56]
+
+command:
+  - python
+  - ${program}
+  - +config=octo-continuous
+  - ${args_no_hyphens}

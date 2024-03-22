@@ -55,10 +55,12 @@ from utils.wandb import (
     track_gradients,
 )
 
-@hydra.main(version_base=None, config_path="./config", config_name="octo-diffusion")
+@hydra.main(version_base=None, config_path=".")
 def main(cfg: DictConfig) -> None:
     """Model training loop."""
+    
     assert jax.default_backend() != "cpu" # ensure accelerator is available
+    cfg = cfg["config"] # some hacky and wacky stuff from hydra (TODO: revise)
 
     key = random.PRNGKey(0)
     key, model_key, dropout_key, image_tokenizer_key, diffusion_key = random.split(key, 5)
