@@ -11,10 +11,11 @@ spec:
     metadata:
       name: s2456316-oxe-train-job
       labels:
+        eidf/user: s2456316-infk8s
         app: s2456316-oxe-train-job
     spec:
       nodeSelector:
-        nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
+        nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3
       volumes:
         - name: robot-learning-baselines-code
           emptyDir: {}
@@ -40,7 +41,9 @@ spec:
               mountPath: "/app/data"
           resources:
             limits:
+              cpu: "48"
               nvidia.com/gpu: 1
+              memory: "64Gi"
       initContainers:
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.0.0
@@ -56,6 +59,11 @@ spec:
             - name: s2456316-git-ssh
               mountPath: "/etc/git-secret"
               readOnly: true
+          resources:
+            limits:
+              cpu: "48"
+              nvidia.com/gpu: 0
+              memory: "64Gi"
           securityContext:
             runAsUser: 65533
       securityContext:
