@@ -36,10 +36,11 @@ def setup_checkpointing(cfg):
     if os.path.exists(cfg.checkpoint_dir):
         # remove old files
         shutil.rmtree(cfg.checkpoint_dir)
-        # recreate tmp directory 
-        os.makedirs(cfg.checkpoint_dir)
+    
+    # create checkpoint directory 
+    os.makedirs(cfg.checkpoint_dir)
 
-    # setup checkpointing
+    # setup checkpoint manager
     chkpt_options = ocp.CheckpointManagerOptions(
         max_to_keep=cfg.max_checkpoints,
         save_interval_steps=cfg.save_interval,
