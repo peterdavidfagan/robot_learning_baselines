@@ -33,7 +33,7 @@ spec:
         - name: robot-learning-baselines-train-container
           image: ghcr.io/peterdavidfagan/robot_learning_baselines_train:latest
           command: ["/bin/bash"]
-          args: ["-c", "source .venv/bin/activate && python /app/code_refresh/robot_learning_baselines.git/robot_learning_baselines/train_multi_modal.py project.base_path=/app/code_refresh/robot_learning_baselines.git +dataset=debug-open-x-embodiment-eidf"]
+          args: ["-c", "source .venv/bin/activate && python /app/code_refresh/robot_learning_baselines.git/robot_learning_baselines/train_multi_modal.py +config=octo-categorical-eidf"]
           volumeMounts:
             - name: robot-learning-baselines-code
               mountPath: "/app/code_refresh"

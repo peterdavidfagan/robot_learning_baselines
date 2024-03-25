@@ -1,0 +1,31 @@
+project:
+  base_path: /app/code_refresh/robot_learning_baselines.git
+
+wandb:
+  use: True
+  project: "robot_learning_baselines"
+  entity: "ipab-rad"
+  experiment_name: octo-categorical
+  tags: ["debugging octo pipeline eidf"]
+  notes: "Debugging octo training pipeline eidf."
+  resume: False
+
+  dataset_visualization:
+    columns:
+      task/language_instruction: "text"
+      observation/image_primary: "image"
+
+  model_gradients:
+    columns:
+      param_name: null
+      mean: null
+      variance: null
+      max_val: null
+      min_val: null
+
+debug_run: True
+defaults:
+  - architecture/multi_modal_transformer: octo-categorical
+  - dataset: debug-open-x-embodiment-eidf
+  - evaluation: octo-base
+  - training: octo-base
