@@ -5,7 +5,11 @@
 
 ### OXE 
 
+See `data_transfer/open-x-embodiment.py` for a script which filters and downloads OXE datasets from source.
+
 ### Tranporter Network Datasets
+
+Datasets to be made available on Hugging Face soon.
 
 ## Running Individual Experiments
 
@@ -33,7 +37,7 @@ wandb agent <wandb generated serial code>
 
 # Kubernetes Setup
 
-Details to be added.
+See `../.kubernetes` for job config files. More general documentation to be added in future.
 
 # Deploying Models
 Details for deploying models using the [ros2_robotics_research_toolkit](https://github.com/peterdavidfagan/ros2_robotics_research_toolkit) to be added in future.
