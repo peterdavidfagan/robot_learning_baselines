@@ -32,3 +32,26 @@ spec:
           mountPath: "/app/code_refresh"
         - name: s2456316-open-x-embodiment
           mountPath: "/app/data"
+  initContainers:
+      - name: git-sync
+        image: registry.k8s.io/git-sync/git-sync:v4.0.0
+        resources:
+          limits:
+            cpu: 12
+            memory: 32Gi
+        args:
+          - --repo=git@github.com:peterdavidfagan/robot_learning_baselines.git
+          - --root=/app
+          - --ssh=true
+          - --ssh-known-hosts=false
+          - --one-time=true
+        volumeMounts:
+          - name: robot-baseline-code
+            mountPath: "/app"
+          - name: s2456316-git-ssh
+            mountPath: "/etc/git-secret"
+            readOnly: true
+        securityContext:
+          runAsUser: 65533
+  securityContext:
+    fsGroup: 65533
