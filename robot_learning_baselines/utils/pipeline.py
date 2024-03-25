@@ -31,14 +31,15 @@ def inspect_model(model, variables, data, method="__call__"):
 
 
 # saving model checkpoints
-def setup_checkpointing(cfg):
+def setup_checkpointing(cfg, reinitialise=True):
     """Set up checkpointing."""
-    if os.path.exists(cfg.checkpoint_dir):
+    if os.path.exists(cfg.checkpoint_dir) and reinitialise:
         # remove old files
         shutil.rmtree(cfg.checkpoint_dir)
     
     # create checkpoint directory 
-    os.makedirs(cfg.checkpoint_dir)
+    if reinitialise:
+        os.makedirs(cfg.checkpoint_dir)
 
     # setup checkpoint manager
     chkpt_options = ocp.CheckpointManagerOptions(

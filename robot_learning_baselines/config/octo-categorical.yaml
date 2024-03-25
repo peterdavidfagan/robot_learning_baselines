@@ -1,6 +1,12 @@
 project:
   base_path: /home/peter/Code/research_projects/robot_learning_baselines
 
+hf_upload:
+  entity: "peterdavidfagan"
+  repo: "octo_categorical"
+  branch: "main"
+  checkpoint_dir: "${config.project.base_path}/.checkpoints/octo-categorical/octo/30"
+
 wandb:
   use: True
   project: "robot_learning_baselines"
