@@ -19,8 +19,8 @@ spec:
     - name: s2456316-ghcr-secret
   restartPolicy: Never
   containers:
-    - name: s2456316-open-x-embodiment-data-transfer
-      image: ghcr.io/peterdavidfagan/open_x_embodiment_data_transfer
+    - name: robot-learning-baselines-train-container
+      image: ghcr.io/peterdavidfagan/robot_learning_baselines_train:latest
       resources:
         limits:
           cpu: 12

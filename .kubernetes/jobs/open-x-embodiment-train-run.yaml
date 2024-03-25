@@ -17,11 +17,11 @@ spec:
       nodeSelector:
         nvidia.com/gpu.product: NVIDIA-A100-SXM4-40GB
       volumes:
-        - name: robot-learning-baselines-code
-          emptyDir: {}
         - name: s2456316-open-x-embodiment
           persistentVolumeClaim:
             claimName: s2456316-open-x-embodiment
+        - name: robot-learning-baselines-code
+          emptyDir: {}
         - name: s2456316-git-ssh
           secret:
             secretName: s2456316-git-ssh
