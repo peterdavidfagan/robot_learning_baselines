@@ -10,9 +10,12 @@ import tqdm
 import subprocess
 import argparse
 import pandas as pd
+from functools import partial
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+from transformers import FlaxT5EncoderModel, AutoTokenizer, AutoConfig
 
 
 MISSING_DATASETS = [
@@ -41,12 +44,6 @@ def download_datasets(datasets, data_dir):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description='RLDS data transfer')
-    # TODO: remove data transfer argument
-    parser.add_argument(
-            "--data_transfer", 
-            type=bool, 
-            help="whether to download the datasets or not", 
-            default=True)
     parser.add_argument(
             "--data_dir", 
             type=str, 
@@ -61,7 +58,7 @@ if __name__=="__main__":
         skiprows=14
     )
 
-    # filter for franka + language annotations
+    # filter for specific datasets
     df = df[
         (df["Robot"]=="Franka") & 
         (df["Language Annotations"].notna()) &
@@ -73,3 +70,19 @@ if __name__=="__main__":
     DATASETS = [d for d in DATASETS if d not in MISSING_DATASETS]
     LOCAL_MOUNT = args.data_dir
     download_datasets(DATASETS, LOCAL_MOUNT)
+
+    # read datasets and write with language embeddings
+    #t5_tokenizer = T5Tokenizer()
+    #t5_tokenize_fn = partial(text_tokenizer, 
+    #                           return_tensors="jax", 
+    #                           max_length=16, # hardcode while debugging
+    #                           padding="max_length", 
+    #                           truncation=True
+    #                           )
+    #t5_model = FlaxT5EncoderModel(AutoConfig.from_pretrained('t5-base')).module
+    
+    #def generate_t5_embedding(text):
+    #    tokens = t5_tokenize_fn(text)["input_ids"]
+    #    return t5_model.apply(, tokens)
+
+    
