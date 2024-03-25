@@ -61,6 +61,7 @@ transporter_networks = {path="./robot_learning_baselines/model_architectures/tra
 octo = {path="./robot_learning_baselines/submodules/octo", develop=true}
 dlimp = {path="./robot_learning_baselines/submodules/dlimp", develop=true}
 distrax = "^0.1.5"
+huggingface-hub = "^0.22.0"
 
 [tool.black]
 line-length = 120
