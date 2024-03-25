@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: s2456316-open-x-embodiment-data-debug
+  labels:
+    eidf/user: s2456316-infk8s
+spec:
+  volumes:
+    - name: s2456316-open-x-embodiment
+      persistentVolumeClaim:
+        claimName: s2456316-open-x-embodiment
+    - name: robot-baseline-code
+      emptyDir: {}
+    - name: s2456316-git-ssh
+      secret:
+        secretName: s2456316-git-ssh
+        defaultMode: 0400
+  imagePullSecrets:
+    - name: s2456316-ghcr-secret
+  restartPolicy: Never
+  containers:
+    - name: s2456316-open-x-embodiment-data-transfer
+      image: ghcr.io/peterdavidfagan/open_x_embodiment_data_transfer
+      resources:
+        limits:
+          cpu: 12
+          memory: 32Gi
+      command: ["/bin/bash"]
+      args: ["-c", "sleep 3600"]
+      volumeMounts:
+        - name: robot-baseline-code
+          mountPath: "/app/code_refresh"
+        - name: s2456316-open-x-embodiment
+          mountPath: "/app/data"
