@@ -3,12 +3,11 @@
 [![experiments](https://img.shields.io/badge/wandb-experiments?style=flat&labelColor=%2300000&color=%23FFFF00)](https://wandb.ai/ipab-rad/robot_learning_baselines)
 
 # Robot Learning Baselines
+[**[Training Runs]**](https://wandb.ai/ipab-rad/robot_learning_baselines) &ensp; [**[Pretrained Models]**](https://github.com/peterdavidfagan/robot_learning_baselines/tree/main) &ensp; [**[Documentation]**](https://peterdavidfagan.com/robot_learning_baselines/) &ensp;
+
 A set of baseline models for learning from demonstration with supporting training/evaluation scripts.
 
 <img src="./assets/robot_learning.jpeg" height=300/>
-
-
-[**[Training Runs]**](https://wandb.ai/ipab-rad/robot_learning_baselines) &ensp; [**[Pretrained Models]**](https://github.com/peterdavidfagan/robot_learning_baselines/tree/main) &ensp; [**[Documentation]**](https://peterdavidfagan.com/robot_learning_baselines/) &ensp;.
 
 
 # Configuring your Local Development Environment
