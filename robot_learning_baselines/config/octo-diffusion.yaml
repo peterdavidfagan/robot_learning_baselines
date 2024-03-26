@@ -5,7 +5,7 @@ hf_upload:
   entity: "peterdavidfagan"
   repo: "octo_diffusion"
   branch: "main"
-  checkpoint_dir: "${config.project.base_path}/.checkpoints/octo-diffusion/octo/30"
+  checkpoint_dir: "${config.project.base_path}/.checkpoints/octo-diffusion/octo/50"
 
 wandb:
   use: True
