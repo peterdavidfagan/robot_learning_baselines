@@ -30,7 +30,7 @@ python train_transporter.py +config=<config_filename>
 ## Running Hyperparameter Sweep
 
 ```bash
-cd hyper_parameter_tuning
+cd config_parameter_tuning
 wandb sweep <sweep.yaml>
 wandb agent <wandb generated serial code>
 ```
