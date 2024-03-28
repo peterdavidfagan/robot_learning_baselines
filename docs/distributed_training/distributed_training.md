@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Kubernetes
-nav_order: 2
+title: Distributed Training
+nav_order: 5
 has_children: true
 permalink: /docs/kubernetes
 ---

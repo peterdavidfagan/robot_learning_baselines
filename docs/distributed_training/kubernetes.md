@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Kubernetes Job Deployment
+title: Kubernetes Configuration
 has_children: false
 nav_order: 2
 parent: Kubernetes
