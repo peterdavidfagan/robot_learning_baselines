@@ -1,8 +1,8 @@
 stacked_encoder_1d_block:
-  _target_: multi_modal_transformers.attention_blocks.attention.StackedCompressedEncoder1DBlock
+  _target_: multi_modal_transformers.attention_blocks.compressed_attention.StackedCompressedEncoder1DBlock
   num_blocks: 12
   encoder_1d_block:
-    _target_: multi_modal_transformers.attention_blocks.attention.CompressedEncoder1DBlock
+    _target_: multi_modal_transformers.attention_blocks.compressed_attention.CompressedEncoder1DBlock
     
     layer_norm:
       _target_: flax.linen.LayerNorm
