@@ -41,7 +41,7 @@ openpyxl = "^3.1.2"
 # Install jax and jaxlib with CUDA support last to prevent cuda version mismatches
 jax = "^0.4.23"
 jaxlib = {extras=["cuda12_pip"], url = "https://storage.googleapis.com/jax-releases/cuda12/jaxlib-0.4.23+cuda12.cudnn89-cp310-cp310-manylinux2014_x86_64.whl"}
-flax = "^0.7.5"
+flax = "^0.8.2"
 optax = "^0.1.7"
 einops = "^0.7.0"
 tqdm = "^4.66.1"
