@@ -1,0 +1,26 @@
+dtype: float32
+param_dtype: float32
+
+# describe the input sequence modalities and number of tokens
+tokens_per_task_description: 16
+tokens_per_image: 75
+tokens_per_readout: 4
+num_observation_blocks: 2
+input_sequence: "[TaskDescriptionPrefix{16}] [Image{25};Readout{7}]*2"
+
+# global architecture params
+token_embedding_dim: 768 
+dropout_rate: 0.0
+attention_dropout_rate: 0.0
+
+# action head prediction settings
+forward_method: predict_action_logits
+prediction_type: categorical
+
+defaults:
+  - tokenizers/text: t5_base
+  - tokenizers/images: gato_resnet
+  - tokenizers/readouts: octo
+  - attention_blocks: compressed_decoder
+  - action_heads: categorical
+
