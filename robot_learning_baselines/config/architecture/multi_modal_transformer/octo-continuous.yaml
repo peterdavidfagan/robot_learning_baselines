@@ -7,6 +7,7 @@ tokens_per_image: 75
 tokens_per_readout: 4
 num_observation_blocks: 2
 input_sequence: "[TaskDescriptionPrefix{16}] [Image{25};Readout{4}]*2"
+compressed_sequence: "[TaskDescriptionPrefix{0}] [Image{0};Readout{0}]*2"
 
 # global architecture params
 token_embedding_dim: 768 
