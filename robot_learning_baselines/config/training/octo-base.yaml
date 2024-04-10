@@ -4,11 +4,11 @@ parallel_training: false
 # checkpoint manager
 checkpoint_dir: ${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/octo
 max_checkpoints: 2
-save_interval: 10
+save_interval: 1
 
 # training hyperparameters
 num_epochs: 50
-batch_size: 32
+batch_size: 64
 momentum: 0.9
 
 # learning rate scheduler

@@ -2,7 +2,7 @@
 dtype: float32
 param_dtype: float32
 token_embedding_dim: 768 
-dropout_rate: 0.0
+dropout_rate: 0.1
 attention_dropout_rate: 0.0
 
 # describe the input sequence modalities and number of tokens
@@ -25,7 +25,7 @@ token_compression_schedule:
       TaskDescriptionPrefix: 0
       Image: 2
       Readout: 0
-  start_layer_idx: 6
+  start_layer_idx: 8
 
 # action head prediction settings
 forward_method: predict_action_logits

@@ -5,7 +5,7 @@ hf_upload:
   entity: "peterdavidfagan"
   repo: "octo_categorical"
   branch: "main"
-  checkpoint_dir: "${config.project.base_path}/.checkpoints/octo-categorical/octo/30"
+  checkpoint_dir: "${config.project.base_path}/.checkpoints/octo-categorical-compressed/octo"
 
 wandb:
   use: True

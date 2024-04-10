@@ -72,9 +72,8 @@ def main(cfg: DictConfig) -> None:
             }
 
     train_data = oxe_load_single_dataset(cfg.dataset) # load dataset for debugging
-    cardinality = 3177 # hardcode while debugging
     #train_data = oxe_load_dataset(cfg.data.open-x-embodiment, cfg.training.decoder_only) # load dataset
-    #cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
+    cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
     
     if cfg.wandb.use: # optionally initialise wandb
         init_wandb(cfg)
@@ -93,15 +92,16 @@ def main(cfg: DictConfig) -> None:
     
     # initialize the training state
     batch = next(train_data.as_numpy_iterator())
-    input_data = preprocess_batch(
-            batch, 
-            text_tokenize_fn, 
-            action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
-            dummy=True
-            )
+
+    # input_data = preprocess_batch(
+    #         batch, 
+    #         text_tokenize_fn, 
+    #         action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
+    #         dummy=True
+    #         )
     #inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.forward_method)
 
-    # for now due to api we need to generate time + noisy actions data, this should be fixed in future
+    # for now due to api we need to generate time + noisy actions data with input_data
     input_data = preprocess_batch(
             batch, 
             text_tokenize_fn, 
@@ -118,36 +118,30 @@ def main(cfg: DictConfig) -> None:
         method=cfg.architecture.multi_modal_transformer.forward_method
         )
     
-    # TODO: remove debug run once finished debugging
-    if cfg.debug_run: # try overfitting a single sample
-        data = preprocess_batch(
-                batch, 
-                train_state.text_tokenize_fn, 
-                action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
-                dummy=False
-                )
+    for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
+        
+        # epoch metrics
+        metrics_history = {
+            "loss": [],
+        }
 
-        loss = 1e3
-        i = 0
-        while loss > 1e-2:
-            if cfg.architecture.multi_modal_transformer.prediction_type == "continuous":
-                train_state, grads = train_state.continuous_train_step(
+        # shuffle dataset and create iterator
+        train_data = train_data.shuffle(10)
+        train_data_iter = train_data.as_numpy_iterator()
+
+        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
+            if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
+                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+                train_state = train_state.continuous_train_step(
                         model, 
                         train_state, 
                         data["text_tokens"], 
                         data["images"], 
                         data["gt_action"],
                         )
-            elif cfg.architecture.multi_modal_transformer.prediction_type == "categorical":
-                train_state, grads = train_state.categorical_train_step(
-                        model, 
-                        train_state, 
-                        data["text_tokens"], 
-                        data["images"], 
-                        data["gt_action"],
-                        )
-            elif cfg.architecture.multi_modal_transformer.prediction_type == "diffusion":
-                train_state, grads = train_state.diffusion_train_step(
+            elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
+                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
+                train_state = train_state.diffusion_train_step(
                         model, 
                         train_state, 
                         data["text_tokens"], 
@@ -157,77 +151,76 @@ def main(cfg: DictConfig) -> None:
             else:
                 raise NotImplementedError
 
-            i += 1
-            loss = train_state.metrics.compute()["loss"]
-            print(loss)
-            train_state = train_state.replace(metrics=train_state.metrics.empty())
 
-            if cfg.wandb.use:
-                wandb.log({
-                            "loss": loss,
-                            "learning_rate": lr_scheduler(train_state.step),
-                        })
-            
-            if i % 10 == 0:
-                track_gradients(cfg, grads)
-                #visualize_multi_modal_predictions(
-                #        train_state, 
-                #        model, 
-                #        {key: data[key] for key in ["text_tokens", "images"]}, 
-                #        data["gt_action"], 
-                #        0, 
-                #        method=cfg.architecture.multi_modal_transformer.action_heads.forward_method) # hardcode while debugging
-    
-    else:
-        for epoch in tqdm(range(cfg.training.num_epochs), leave=False):
-            
-            # epoch metrics
-            metrics_history = {
-                "loss": [],
-            }
-
-            # shuffle dataset and create iterator
-            train_data = train_data.shuffle(10)
-            train_data_iter = train_data.as_numpy_iterator()
-
-            for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-                if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
-                    data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
-                    train_state = train_state.continuous_train_step(
-                            model, 
-                            train_state, 
-                            data["text_tokens"], 
-                            data["images"], 
-                            data["gt_action"],
-                            )
-                elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
-                    data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
-                    train_state = train_state.diffusion_train_step(
-                            model, 
-                            train_state, 
-                            data["text_tokens"], 
-                            data["images"], 
-                            data["gt_action"],
-                            )
-                else:
-                    raise NotImplementedError
+        # compute and track metrics
+        for metric, value in train_state.metrics.compute().items():
+            metrics_history[f"{metric}"].append(value)
+        train_state = train_state.replace(metrics=train_state.metrics.empty())
+        
+        if cfg.wandb.use:
+            wandb.log({
+                        "epoch_loss": metrics_history["loss"][-1],
+                        "epoch": epoch,
+                    })
+        print(f"Epoch {epoch} train loss: {metrics_history['loss'][-1]}")
 
 
-            # compute and track metrics
-            for metric, value in train_state.metrics.compute().items():
-                metrics_history[f"{metric}"].append(value)
-            train_state = train_state.replace(metrics=train_state.metrics.empty())
-            
-            if cfg.wandb.use:
-                wandb.log({
-                            "epoch_loss": metrics_history["loss"][-1],
-                            "epoch": epoch,
-                        })
-            print(f"Epoch {epoch} train loss: {metrics_history['loss'][-1]}")
+        # save model checkpoint
+        chkpt_manager.save(epoch, train_state)
 
 
-            # save model checkpoint
-            chkpt_manager.save(epoch, train_state)
+# TODO: remove debug run once finished debugging
+# if cfg.debug_run: # try overfitting a single sample
+#     data = preprocess_batch(
+#             batch, 
+#             train_state.text_tokenize_fn, 
+#             action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
+#             dummy=False
+#             )
+
+#     loss = 1e3
+#     i = 0
+#     while loss > 1e-2:
+#         if cfg.architecture.multi_modal_transformer.prediction_type == "continuous":
+#             train_state, grads = train_state.continuous_train_step(
+#                     model, 
+#                     train_state, 
+#                     data["text_tokens"], 
+#                     data["images"], 
+#                     data["gt_action"],
+#                     )
+#         elif cfg.architecture.multi_modal_transformer.prediction_type == "categorical":
+#             train_state, grads = train_state.categorical_train_step(
+#                     model, 
+#                     train_state, 
+#                     data["text_tokens"], 
+#                     data["images"], 
+#                     data["gt_action"],
+#                     )
+#         elif cfg.architecture.multi_modal_transformer.prediction_type == "diffusion":
+#             train_state, grads = train_state.diffusion_train_step(
+#                     model, 
+#                     train_state, 
+#                     data["text_tokens"], 
+#                     data["images"], 
+#                     data["gt_action"],
+#                     )
+#         else:
+#             raise NotImplementedError
+
+#         i += 1
+#         loss = train_state.metrics.compute()["loss"]
+#         print(loss)
+#         train_state = train_state.replace(metrics=train_state.metrics.empty())
+
+#         if cfg.wandb.use:
+#             wandb.log({
+#                         "loss": loss,
+#                         "learning_rate": lr_scheduler(train_state.step),
+#                     })
+        
+#         if i % 10 == 0:
+#             track_gradients(cfg, grads)
 
 
 if __name__ == "__main__":
