@@ -93,13 +93,19 @@ def main(cfg: DictConfig) -> None:
     # initialize the training state
     batch = next(train_data.as_numpy_iterator())
 
-    # input_data = preprocess_batch(
-    #         batch, 
-    #         text_tokenize_fn, 
-    #         action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
-    #         dummy=True
-    #         )
-    #inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.forward_method)
+    input_data = preprocess_batch(
+            batch, 
+            text_tokenize_fn, 
+            action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
+            dummy=True
+            )
+    inspect_model(
+            model, 
+            rngs, 
+            input_data, 
+            method=cfg.architecture.multi_modal_transformer.forward_method,
+            compute_flops=False,
+            )
 
     # for now due to api we need to generate time + noisy actions data with input_data
     input_data = preprocess_batch(
@@ -130,8 +136,13 @@ def main(cfg: DictConfig) -> None:
         train_data_iter = train_data.as_numpy_iterator()
 
         for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-            if cfg.architecture.multi_modal_transformer.action_heads.type == "continuous":
-                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="continuous", dummy=False)
+            data = preprocess_batch(
+            batch, 
+            train_state.text_tokenize_fn, 
+            action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
+            dummy=False)
+
+            if cfg.architecture.multi_modal_transformer.prediction_type == "continuous":
                 train_state = train_state.continuous_train_step(
                         model, 
                         train_state, 
@@ -139,8 +150,15 @@ def main(cfg: DictConfig) -> None:
                         data["images"], 
                         data["gt_action"],
                         )
-            elif cfg.architecture.multi_modal_transformer.action_heads.type == "diffusion":
-                data = preprocess_batch(batch, train_state.text_tokenize_fn, action_head_type="diffusion", dummy=False)
+            elif cfg.architecture.multi_modal_transformer.prediction_type == "categorical":
+                train_state, grads = train_state.categorical_train_step(
+                        model, 
+                        train_state, 
+                        data["text_tokens"], 
+                        data["images"], 
+                        data["gt_action"],
+                        )
+            elif cfg.architecture.multi_modal_transformer.prediction_type == "diffusion":
                 train_state = train_state.diffusion_train_step(
                         model, 
                         train_state, 
