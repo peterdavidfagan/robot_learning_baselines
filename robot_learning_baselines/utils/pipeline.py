@@ -17,7 +17,7 @@ import orbax.checkpoint as ocp
 
 
 # introspecting model architecture
-def inspect_model(model, variables, data, method="__call__"):
+def inspect_model(model, variables, data, method="__call__", compute_flops=False, compute_vjp_flops=False):
     """
     Prints tabulated information about flax model.
     """
@@ -26,6 +26,8 @@ def inspect_model(model, variables, data, method="__call__"):
             variables, 
             **data, 
             method=method,
+            compute_flops=compute_flops,
+            compute_vjp_flops=compute_vjp_flops,
             )
         )
 

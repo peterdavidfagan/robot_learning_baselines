@@ -99,8 +99,7 @@ def main(cfg: DictConfig) -> None:
             action_head_type=cfg.architecture.multi_modal_transformer.prediction_type, 
             dummy=True
             )
-    inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.forward_method)
-    
+    #inspect_model(model, rngs, input_data, method=cfg.architecture.multi_modal_transformer.forward_method)
 
     # for now due to api we need to generate time + noisy actions data, this should be fixed in future
     input_data = preprocess_batch(
