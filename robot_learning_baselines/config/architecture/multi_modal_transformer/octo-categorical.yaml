@@ -1,19 +1,16 @@
+# global architecture params
 dtype: float32
 param_dtype: float32
+token_embedding_dim: 768 
+dropout_rate: 0.1
+attention_dropout_rate: 0.0
 
 # describe the input sequence modalities and number of tokens
-tokens_per_task_description: 16
-tokens_per_image: 75
-tokens_per_readout: 4
-num_observation_blocks: 2
 input_sequence: "[TaskDescriptionPrefix{16}] [Image{25};Readout{7}]*2"
-compressed_sequence: "[TaskDescriptionPrefix{0}] [Image{0};Readout{0}]*2"
-
-
-# global architecture params
-token_embedding_dim: 768 
-dropout_rate: 0.0
-attention_dropout_rate: 0.0
+tokens_per_task_description: 16
+tokens_per_image: 25
+tokens_per_readout: 7
+num_observation_blocks: 2
 
 # action head prediction settings
 forward_method: predict_action_logits

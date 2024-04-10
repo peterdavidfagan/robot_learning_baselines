@@ -4,7 +4,6 @@ import os
 from time import time
 from functools import partial
 
-
 # linear algebra and deep learning frameworks
 import numpy as np
 import jax
@@ -46,28 +45,32 @@ def benchmark_inference(cfg, model, variables, rngs, input_data, method, num_pas
     """
     Generate benchmarks for model inference.
     """
-    
-    # first perform single forward pass to compile model
-
+    # perform preliminary forward pass 
+    model.apply(variables, **input_data, rngs=rngs, method=method)
 
     # test model inference over a number of iterations
     inference_latency = []
     for _ in tqdm(range(num_passes)):
         start = time()
-        model.apply(variables, **input_data, rngs=rngs, method=method)
+        for _ in tqdm(range(20)):
+            model.apply(variables, **input_data, rngs=rngs, method=method)
         end = time()
-        inference_time = end - start
+        inference_time = (end - start) / 20
         inference_latency.append(inference_time)
         wandb.log({
                 f"{cfg.training.batch_size}_batch_inference_latency": inference_time
             })
     
-    print("Mean inference time: {}".format(np.mean(inference_latency)))
-    
+    wandb.log({
+                f"{cfg.training.batch_size}_batch_mean_inference_latency": np.mean(inference_latency)
+            })
 
-@hydra.main(version_base=None, config_path="./config", config_name="octo-perf-bench")
+@hydra.main(version_base=None, config_path=".")
 def main(cfg: DictConfig) -> None:
     """Performance benchmarks for multi modal model architectures."""
+    assert jax.default_backend() != "cpu" # ensure accelerator is available
+    cfg = cfg["config"] # some hacky and wacky stuff from hydra (TODO: revise)
+    
     init_wandb(cfg)
 
     key = random.PRNGKey(0)
@@ -92,7 +95,6 @@ def main(cfg: DictConfig) -> None:
     input_data = preprocess_batch(batch, text_tokenize_fn, action_head_type="placeholder", dummy=True)
     del batch
     
-    
     # initialise model params
     model = Octo(cfg.architecture.multi_modal_transformer) # instantiate model
     variables = model.init(
@@ -101,7 +103,6 @@ def main(cfg: DictConfig) -> None:
         input_data["images"],
         method="generate_readouts"
     )
-
     
     # inspect model architecture
     #inspect_model(model, rngs, input_data, method="predict_continuous_action")

@@ -19,13 +19,13 @@ token_compression_schedule:
   modality_compression_rate:
     prune:
       TaskDescriptionPrefix: 0
-      Image: 2
+      Image: 0
       Readout: 0
     merge:
       TaskDescriptionPrefix: 0
-      Image: 2
+      Image: 0
       Readout: 0
-  start_layer_idx: 8
+  start_layer_idx: 6
 
 # action head prediction settings
 forward_method: predict_action_logits
