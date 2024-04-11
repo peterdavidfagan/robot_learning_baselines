@@ -41,21 +41,23 @@ from utils.wandb import (
 )
 
 
-def benchmark_inference(cfg, model, variables, rngs, input_data, method, num_passes=100):
+def benchmark_inference(cfg, model, variables, rngs, input_data, method, num_passes=5):
     """
     Generate benchmarks for model inference.
     """
     # perform preliminary forward pass 
-    model.apply(variables, **input_data, rngs=rngs, method=method)
+    forward_pass = jax.jit(lambda data: model.apply(variables, **data, rngs=rngs, method=method))
+    forward_pass(input_data)
+    
 
     # test model inference over a number of iterations
     inference_latency = []
     for _ in tqdm(range(num_passes)):
         start = time()
-        for _ in tqdm(range(20)):
-            model.apply(variables, **input_data, rngs=rngs, method=method)
+        for _ in tqdm(range(50)):
+            forward_pass(input_data)
         end = time()
-        inference_time = (end - start) / 20
+        inference_time = (end - start) / 50
         inference_latency.append(inference_time)
         wandb.log({
                 f"{cfg.training.batch_size}_batch_inference_latency": inference_time

@@ -19,11 +19,11 @@ token_compression_schedule:
   modality_compression_rate:
     prune:
       TaskDescriptionPrefix: 0
-      Image: 0
+      Image: 2
       Readout: 0
     merge:
       TaskDescriptionPrefix: 0
-      Image: 0
+      Image: 2
       Readout: 0
   start_layer_idx: 6
 
