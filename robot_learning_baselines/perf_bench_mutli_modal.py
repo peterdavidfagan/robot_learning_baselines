@@ -65,6 +65,13 @@ def benchmark_inference(cfg, model, variables, rngs, input_data, method, num_pas
                 f"{cfg.training.batch_size}_batch_mean_inference_latency": np.mean(inference_latency)
             })
 
+def compute_flops(cfg, model, variables, rngs, input_data, method):
+    """
+    Compute model floating point operations. 
+    """
+    raise NotImplementedError
+
+
 @hydra.main(version_base=None, config_path=".")
 def main(cfg: DictConfig) -> None:
     """Performance benchmarks for multi modal model architectures."""
@@ -104,11 +111,10 @@ def main(cfg: DictConfig) -> None:
         method="generate_readouts"
     )
     
-    # inspect model architecture
-    #inspect_model(model, rngs, input_data, method="predict_continuous_action")
-    
     # test model inference speed 
     benchmark_inference(cfg, model, variables, rngs, input_data, method="generate_readouts")
+
+    # compute model FLOPs
 
 if __name__ == "__main__":
     main()
