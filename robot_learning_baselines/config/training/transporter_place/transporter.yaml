@@ -1,10 +1,10 @@
-num_epochs: 100
-batch_size: 8
+num_epochs: 1000
+batch_size: 4
 
 # checkpoint manager
-checkpoint_dir: ${project.base_path}/.checkpoints/${wandb.experiment_name}/transporter_place
+checkpoint_dir: ${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place
 max_checkpoints: 2
-save_interval: 50
+save_interval: 5
 
 optimizer:
   _target_: optax.adam

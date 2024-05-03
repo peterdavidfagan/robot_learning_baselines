@@ -60,13 +60,22 @@ OMG what a great model this is.
             repo_type="model",
             exist_ok=True, 
             )
-
-    api.upload_folder(
-            folder_path=checkpoint_dir,
+    if os.path.isdir(checkpoint_dir):
+        api.upload_folder(
+                folder_path=checkpoint_dir,
+                repo_id=repo_id, 
+                repo_type="model",
+                multi_commits=True,
+                )
+    elif os.path.isfile(checkpoint_dir):
+        api.upload_file(
+            path_or_fileobj=checkpoint_dir,
+            path_in_repo="checkpoint.tar.xz", 
             repo_id=repo_id, 
             repo_type="model",
-            multi_commits=True,
-            )
+        )
+    else:
+        raise NotImplementedError
 
     # commit changes to branch
     #api.create_commit(

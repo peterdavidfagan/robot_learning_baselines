@@ -11,14 +11,14 @@ query:
       strides: [1,1]
       padding: SAME
       use_bias: True
-      dtype: ${architecture.transporter.dtype}
-      param_dtype: ${architecture.transporter.param_dtype}
+      dtype: ${config.architecture.transporter.dtype}
+      param_dtype: ${config.architecture.transporter.param_dtype}
       kernel_init:
         _target_: flax.linen.initializers.glorot_uniform
-        dtype: ${architecture.transporter.param_dtype}
+        dtype: ${config.architecture.transporter.param_dtype}
       bias_init:
         _target_: flax.linen.initializers.uniform
-        dtype: ${architecture.transporter.param_dtype}
+        dtype: ${config.architecture.transporter.param_dtype}
 
     pool:
       _partial_: true
@@ -34,8 +34,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -48,14 +48,14 @@ query:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block2
       num_blocks: 3
@@ -63,8 +63,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -77,14 +77,14 @@ query:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block3
       num_blocks: 3
@@ -92,8 +92,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -106,14 +106,14 @@ query:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
 
     - name: block4
       num_blocks: 3
@@ -121,8 +121,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -135,14 +135,14 @@ query:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block5
       num_blocks: 3
@@ -150,8 +150,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -164,14 +164,14 @@ query:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
    
     - name: upsample
 
@@ -181,8 +181,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -195,14 +195,14 @@ query:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: upsample
     
@@ -212,8 +212,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -226,14 +226,14 @@ query:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: upsample
     
@@ -243,8 +243,8 @@ query:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -252,19 +252,19 @@ query:
 
         conv:
           _target_: flax.linen.Conv
-          features: ${architecture.transporter.place.dim_output_features}
+          features: ${config.architecture.transporter.place.dim_output_features}
           kernel_size: [3,3]
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
 
 key:
   output_softmax: False
@@ -276,14 +276,14 @@ key:
       strides: [1,1]
       padding: SAME
       use_bias: True
-      dtype: ${architecture.transporter.dtype}
-      param_dtype: ${architecture.transporter.param_dtype}
+      dtype: ${config.architecture.transporter.dtype}
+      param_dtype: ${config.architecture.transporter.param_dtype}
       kernel_init:
         _target_: flax.linen.initializers.glorot_uniform
-        dtype: ${architecture.transporter.param_dtype}
+        dtype: ${config.architecture.transporter.param_dtype}
       bias_init:
         _target_: flax.linen.initializers.uniform
-        dtype: ${architecture.transporter.param_dtype}
+        dtype: ${config.architecture.transporter.param_dtype}
 
     pool:
       _partial_: true
@@ -299,8 +299,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -313,14 +313,14 @@ key:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block2
       num_blocks: 3
@@ -328,8 +328,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -342,14 +342,14 @@ key:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block3
       num_blocks: 3
@@ -357,8 +357,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -371,14 +371,14 @@ key:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
 
     - name: block4
       num_blocks: 3
@@ -386,8 +386,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -400,14 +400,14 @@ key:
           strides: [2,2]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: block5
       num_blocks: 3
@@ -415,8 +415,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -429,14 +429,14 @@ key:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
    
     - name: upsample
 
@@ -446,8 +446,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -460,14 +460,14 @@ key:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: upsample
     
@@ -477,8 +477,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -491,14 +491,14 @@ key:
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
     
     - name: upsample
     
@@ -508,8 +508,8 @@ key:
       resnet_block:
         norm:
           _target_: flax.linen.BatchNorm
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
 
         activation:
           _partial_: true
@@ -517,16 +517,16 @@ key:
 
         conv:
           _target_: flax.linen.Conv
-          features: ${architecture.transporter.place.dim_output_features}
+          features: ${config.architecture.transporter.place.dim_output_features}
           kernel_size: [3,3]
           strides: [1,1]
           padding: SAME
           use_bias: True
-          dtype: ${architecture.transporter.dtype}
-          param_dtype: ${architecture.transporter.param_dtype}
+          dtype: ${config.architecture.transporter.dtype}
+          param_dtype: ${config.architecture.transporter.param_dtype}
           kernel_init:
             _target_: flax.linen.initializers.glorot_uniform
-            dtype: ${architecture.transporter.param_dtype}
+            dtype: ${config.architecture.transporter.param_dtype}
           bias_init:
             _target_: flax.linen.initializers.uniform
-            dtype: ${architecture.transporter.param_dtype}.
+            dtype: ${config.architecture.transporter.param_dtype}.

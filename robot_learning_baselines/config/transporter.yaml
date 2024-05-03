@@ -1,5 +1,13 @@
 project:
-  base_path: /home/peter/Code/research_projects/robot_learning_baselines
+  base_path: /home/peter/Code/temp/robot_learning_baselines
+
+hf_upload:
+  entity: "peterdavidfagan"
+  repo: "transporter_networks"
+  branch: "main"
+  checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}"
+  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/50"
+  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/50"
 
 wandb:
   use: True

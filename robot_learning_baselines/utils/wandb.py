@@ -150,17 +150,16 @@ def visualize_transporter_predictions(cfg, transporter, raw_batch, epoch):
     column_names = list(table_config.keys())
 
     pick_pred = transporter.pick_model_state.apply_fn(
-            {"params": transporter.pick_model_state.params,
-             "batch_stats": transporter.pick_model_state.batch_stats},
+            {"params": transporter.pick_model_state.params},
             raw_batch["rgbd_normalized"],
-            train=False).__array__().copy()
+            train=False)
 
     place_pred = transporter.place_model_state.apply_fn(
             {"params": transporter.place_model_state.params},
             raw_batch["rgbd_normalized"],
             raw_batch["rgbd_crop_normalized"],
             train=False)
-
+            
     data = []
     for i in range(cfg.training.transporter_pick.batch_size):
         # inspect input data
@@ -188,12 +187,12 @@ def visualize_transporter_predictions(cfg, transporter, raw_batch, epoch):
         # inspect model predictions
         pick_pred_ = pick_pred[i,:].copy()
         pick_pred_ = (pick_pred_ - pick_pred_.min()) / ((pick_pred_.max() - pick_pred_.min()))
-        pick_heatmap = pick_pred_.reshape((160, 320))
+        pick_heatmap = pick_pred_.reshape((360, 360))
         pick_heatmap = Image.fromarray(np.asarray(cm.viridis(pick_heatmap)*255, dtype=np.uint8))
 
         place_pred_ = place_pred[i,:].copy()
         place_pred_ = (place_pred_ - place_pred_.min()) / ((place_pred_.max() - place_pred_.min()))
-        place_heatmap = place_pred_.reshape((160, 320))
+        place_heatmap = place_pred_.reshape((360, 360))
         place_heatmap = Image.fromarray(np.asarray(cm.viridis(place_heatmap)*255, dtype=np.uint8))
 
         data.append([
