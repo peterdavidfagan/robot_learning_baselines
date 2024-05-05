@@ -66,23 +66,19 @@ def main(cfg: DictConfig) -> None:
     cfg = cfg["config"] # some hacky and wacky stuff from hydra (TODO: revise)
 
 
-    # upload to hugging face
-    # compress the checkpoint dir
-    # import tarfile
-    # path, filename = os.path.split(cfg.hf_upload.checkpoint_dir)
-    # compressed_file = os.path.join(path, "checkpoint.tar.xz")
-    # with tarfile.open(compressed_file, "w:xz") as tar:
-    #     tar.add(cfg.hf_upload.checkpoint_dir, arcname=".")
+    # upload model checkpoints to hugging face
+    import tarfile
+    path, filename = os.path.split(cfg.hf_upload.checkpoint_dir)
+    compressed_file = os.path.join(path, "checkpoint.tar.xz")
+    with tarfile.open(compressed_file, "w:xz") as tar:
+        tar.add(cfg.hf_upload.checkpoint_dir, arcname=".")
 
-    # print(compressed_file)
-
-    # upload models to huggingface
-    # push_model(
-    #     entity = cfg.hf_upload.entity,
-    #     repo_name = cfg.hf_upload.repo,
-    #     branch = cfg.hf_upload.branch,
-    #     checkpoint_dir = compressed_file,
-    #     )
+    push_model(
+        entity = cfg.hf_upload.entity,
+        repo_name = cfg.hf_upload.repo,
+        branch = cfg.hf_upload.branch,
+        upload_path = compressed_file,
+        )
 
     assert jax.default_backend() != "cpu" # ensure accelerator is available
 
@@ -147,16 +143,37 @@ def main(cfg: DictConfig) -> None:
         return pick_q_vals, place_q_vals
 
    
-    # convert model to tflite
+    # create tensorflow prediction function
     from jax.experimental import jax2tf
     tf_predict = tf.function(
            jax2tf.convert(predict, enable_xla=False),
            input_signature=[
-               tf.TensorSpec(shape=(1,360,360,4), dtype=tf.float64, name='rgbd'),
+                tf.TensorSpec(shape=(1,360,360,4), dtype=tf.float64, name='rgbd'),
                 tf.TensorSpec(shape=(1,100,100,4), dtype=tf.float64, name='rgbd_crop'),
                ],
            autograph=False)
+
+    # convert prediction function to onnx model
+    import onnx
+    import tf2onnx
+    onnx_model, _ = tf2onnx.convert.from_function(
+        function=tf_predict,
+        input_signature=[
+            tf.TensorSpec(shape=(1,360,360,4), dtype=tf.float64, name='rgbd'),
+            tf.TensorSpec(shape=(1,100,100,4), dtype=tf.float64, name='rgbd_crop'),
+        ],
+        )
+    onnx.save(onnx_model, './transporter.onnx')
+
+    # upload onnx model to huggingface
+    push_model(
+        entity = cfg.hf_upload.entity,
+        repo_name = cfg.hf_upload.repo,
+        branch = cfg.hf_upload.branch,
+        upload_path = "./transporter.onnx",
+        )
     
+    # convert prediction function to tflite
     converter = tf.lite.TFLiteConverter.from_concrete_functions(
        [tf_predict.get_concrete_function()], tf_predict)
     converter.target_spec.supported_ops = [
@@ -164,21 +181,22 @@ def main(cfg: DictConfig) -> None:
       tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
     ]
     tflite_float_model = converter.convert()
-    
-    # Show model size in KBs.
-    float_model_size = len(tflite_float_model) / 1024
-    print('Float model size = %dKBs.' % float_model_size)
+        
+    # apply quantisation
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_quantized_model = converter.convert()
 
     f = open("transporter.tflite", 'wb')
-    f.write(tflite_float_model)
+    f.write(tflite_quantized_model)
     f.close()
-    
-    # apply quantisation
 
-    # convert model to onnx
-
-    # upload onnx model to huggingface
-
+    # upload tflite model to huggingface
+    push_model(
+        entity = cfg.hf_upload.entity,
+        repo_name = cfg.hf_upload.repo,
+        branch = cfg.hf_upload.branch,
+        upload_path = "./transporter.tflite",
+        )
 
 if __name__=="__main__":
     main()
