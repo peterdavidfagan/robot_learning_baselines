@@ -6,8 +6,8 @@ hf_upload:
   repo: "transporter_networks"
   branch: "main"
   checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}"
-  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/50"
-  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/50"
+  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/150"
+  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/150"
 
 wandb:
   use: True

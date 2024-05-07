@@ -3,8 +3,8 @@ batch_size: 4
 
 # checkpoint manager
 checkpoint_dir: ${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick
-max_checkpoints: 2
-save_interval: 5
+max_checkpoints: 8
+save_interval: 10
 
 optimizer:
   _target_: optax.adam

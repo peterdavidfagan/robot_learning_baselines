@@ -153,14 +153,14 @@ def main(cfg: DictConfig) -> None:
                 )
 
             # compute ce loss for pick network and update pick network
-            pick_train_state, pick_loss = pick_train_step(
+            pick_train_state, pick_loss, pick_success_rate = pick_train_step(
                     transporter.pick_model_state, 
                     rgbd_normalized, 
                     ids[0])
             transporter = transporter.replace(pick_model_state=pick_train_state) 
-            
+
             # compute ce loss for place networks and update place network
-            place_train_state, place_loss = place_train_step(
+            place_train_state, place_loss, place_success_rate = place_train_step(
                     transporter.place_model_state,
                     rgbd_normalized,
                     rgbd_crop_normalized, 
@@ -170,14 +170,15 @@ def main(cfg: DictConfig) -> None:
             
 
         # report epoch metrics (optionally add to wandb)
-        pick_loss_epoch = transporter.pick_model_state.metrics.compute()
-        place_loss_epoch = transporter.place_model_state.metrics.compute()
-        print(f"Epoch {epoch}: pick_loss: {pick_loss_epoch}, place_loss: {place_loss_epoch}")
+        pick_metrics = transporter.pick_model_state.metrics.compute()
+        place_metrics = transporter.place_model_state.metrics.compute()
         
         if cfg.wandb.use and (epoch%5==0):
             wandb.log({
-                "pick_loss": pick_loss_epoch,
-                "place_loss": place_loss_epoch,
+                "pick_train_loss": pick_metrics["loss"],
+                "place_train_loss": place_metrics["loss"],
+                "pick_train_success_rate": pick_metrics["success_rate"],
+                "place_train_success_rate":place_metrics["success_rate"],
                 "epoch": epoch
                 })
             visualize_transporter_predictions(cfg, transporter, eval_data, epoch)

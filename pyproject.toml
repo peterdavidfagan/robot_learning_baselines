@@ -62,6 +62,9 @@ octo = {path="./robot_learning_baselines/data_preprocessing/octo", develop=true}
 dlimp = {path="./robot_learning_baselines/data_preprocessing/dlimp", develop=true}
 distrax = "^0.1.5"
 huggingface-hub = "^0.22.0"
+tf2onnx = "^1.16.1"
+onnxruntime = "^1.17.3"
+opencv-python = "^4.9.0.80"
 
 [tool.black]
 line-length = 120
