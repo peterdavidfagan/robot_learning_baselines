@@ -1,4 +1,4 @@
-"""Utilities for loading and inspecting datasets."""
+"""Utilities for loading, inspecting and processing datasets."""
 
 # standard libraries
 import os
@@ -41,10 +41,35 @@ def load_hf_transporter_dataset(cfg):
                 shift=2,
                 drop_remainder=True).map(transporter_step)
         return episode
+
+    def image_augmentation(step):
+        """
+        Randomly apply augmentations to images.
+        """
+
+        def augment_image(image):
+            transformations = [
+                lambda x: tf.image.random_brightness(x, max_delta=0.2),
+                lambda x: tf.image.random_contrast(x, lower=0.5, upper=1.5),
+                lambda x: tf.image.random_saturation(x, lower=0.5, upper=1.5),
+                lambda x: tf.image.random_hue(x, max_delta=0.2)
+            ]
+            for transform in transformations:
+                if tf.random.uniform([], minval=0, maxval=1) < 0.5:  # Adjust probability as needed
+                    image = transform(image)
+            return image
+
+
+        return {"pick_rgb": augment_image(step["pick_rgb"]),
+                "pick_depth": step["pick_depth"],
+                "pick_pixel_coords": step["pick_pixel_coords"],
+                "place_rgb": augment_image(step["place_rgb"]),
+                "place_depth": step["place_depth"],
+                "place_pixel_coords": step["place_pixel_coords"],
+                }
         
     # download data from huggingface
     DOWNLOAD_PATH="/tmp/transporter_dataset"
-    COMPRESSED_FILENAME="data.tar.xz"
     for file in cfg["huggingface"]["files"]:
         hf_hub_download(
             repo_id=f"{cfg['huggingface']['entity']}/{cfg['huggingface']['repo']}",
@@ -58,43 +83,17 @@ def load_hf_transporter_dataset(cfg):
             tar.extractall(path=DOWNLOAD_PATH)
         os.remove(COMPRESSED_FILEPATH)
 
+    # TODO: account for multuple dataset files, build each and define sampling
     # load with tfds
     ds = tfds.builder_from_directory(DOWNLOAD_PATH).as_dataset(split="train")
    
     # process and batch data
     ds = ds.map(episode_step_to_transition)
     ds = ds.flat_map(lambda x: x[rlds.STEPS]) # convert from episodes to steps
+    ds = ds.map(image_augmentation)
     ds = ds.batch(cfg.batch_size)
 
     return ds 
-
-# def load_transporter_dataset(cfg):
-#     """Load transporter dataset."""
-    
-#     def transporter_step(step):
-#         return {"rgbd": tf.concat([
-#                             tf.cast(step["observation"]["overhead_camera/rgb"][0], dtype=tf.float32), 
-#                             tf.expand_dims(step["observation"]["overhead_camera/depth"][0], axis=-1)
-#                             ], axis=-1),
-#                 "pick_pose": step["action"][0][:7],
-#                 "place_pose": step["action"][0][7:],
-#                 "camera_intrinsics": step["camera_intrinsics"][0],
-#                 "camera_extrinsics": step["camera_extrinsics"][0],
-#                 }
-    
-#     def episode_step_to_transition(episode):
-#         episode[rlds.STEPS] = rlds.transformations.batch(episode[rlds.STEPS], 
-#                 size=2, 
-#                 shift=1, 
-#                 drop_remainder=True).map(transporter_step)
-#         return episode
-    
-#     ds = tfds.builder_from_directory(f"{cfg.tfds_data_dir}/{cfg.dataset}").as_dataset(split="train")
-#     ds = ds.map(episode_step_to_transition)
-#     ds = ds.flat_map(lambda x: x[rlds.STEPS]) # convert from episodes to steps
-#     ds = ds.batch(cfg.batch_size)
-
-#     return ds 
 
 
 def oxe_load_single_dataset(cfg):
@@ -174,90 +173,6 @@ def oxe_load_dataset(cfg):
     return iterator
 
 ## Data Preprocessing ##
-
-# def preprocess_transporter_batch(batch):
-#     """
-#     Process batch of data.
-
-#     For now some of the data processing happens within the training loop.
-#     This is not ideal and data should be precomputed, this is temporary until training pipeline is more mature
-#     """
-#     def pose_to_pixel_space(pose, camera_intrinsics, camera_extrinsics):
-#         """Map pose to pixel space."""
-#         # convert world coordinates to camera coordinates
-#         pose = jnp.concatenate([pose, jnp.ones(1)], axis=-1)
-#         camera_coords = camera_extrinsics @ pose
-#         camera_coords = camera_coords[:3] / camera_coords[3]
-
-#         # convert camera coordinates to pixel coordinates
-#         pixel_coords = camera_intrinsics @ camera_coords
-#         pixel_coords = pixel_coords[:2] / pixel_coords[2]
-#         pixel_coords = jnp.round(pixel_coords).astype(jnp.int32)
-
-#         return pixel_coords
-    
-#     def pixel_to_idx(pixel, image_width=640):
-#         """Convert pixel x,y coordinate to one-hot vector."""
-#         pixel = jnp.round(pixel).astype(jnp.int32)
-#         return (pixel[1] * image_width) + pixel[0]
-        
-#     def crop_rgbd(rgbd, pixel_coords, crop_size=(64, 64)):
-#         """Crop rgbd image around pixel coordinates."""
-#         x, y = pixel_coords
-        
-#         # get starting coords for cropping
-#         starting_x = jnp.round(x-(crop_size[0]//2)).astype(jnp.int32)
-#         starting_y = jnp.round(y-(crop_size[1]//2)).astype(jnp.int32)
-        
-#         return jax.lax.dynamic_slice(rgbd, (starting_y, starting_x, 0), (crop_size[0], crop_size[1], 4))
-   
-#     def normalize_rgbd(rgbd):
-#         """Normalize rgbd image."""
-#         # divide by 255 to get values between 0 and 1
-#         rgbd.at[:, :, :3].set(rgbd[:, :, :3] / 255.0)
-
-#         # calculate channel-wise mean
-#         mean = jnp.mean(rgbd, axis=(0, 1))
-#         std = jnp.std(rgbd, axis=(0, 1))
-#         rgbd = (rgbd - mean) / std
-#         return rgbd
-
-#     b, h, w, c = batch["rgbd"].shape
-    
-#     # TODO: move downsampling params to config, dynamically create from input image size
-#     h_downsample = 3
-#     w_downsample = 2
-    
-#     # overwrite pick height with object height of 0.425 as currently the pick height in raw dataset is pre-grasp height
-#     pick_pose = batch["pick_pose"][:, :3].copy()
-#     pick_pose[:, 2] = 0.425
-#     place_pose = batch["place_pose"][:, :3].copy()
-    
-#     # map poses to pixels and pixel indices using camera intrinsics and extrinsics
-#     camera_intrinsics = e.repeat(batch["camera_intrinsics"], "b h w -> (b repeat) h w", repeat=2)
-#     camera_extrinsics = e.repeat(batch["camera_extrinsics"], "b h w -> (b repeat) h w", repeat=2)
-#     poses, ps = e.pack([pick_pose, place_pose], "* l") # 2b 3
-#     pixels = jax.vmap(pose_to_pixel_space, (0, 0, 0), 0)(poses, camera_intrinsics, camera_extrinsics) # 2b 2
-    
-#     # account for downsampling of image
-#     # x coord corresponds to height, y coord corresponds to width
-#     pixels, ps = e.pack([pixels[:, 0] // w_downsample, pixels[:, 1] // h_downsample], "b *")
-#     pick_pixels, place_pixels = e.unpack(pixels, [[b], [b]], "* p")
-#     ids = jax.vmap(pixel_to_idx, (0, None), 0)(pixels, w // w_downsample)
-#     pick_ids, place_ids = e.unpack(ids, [[b], [b]], "*")
-    
-#     # downsample image
-#     rgbd = jax.vmap(jax.image.resize, in_axes=(0, None, None), out_axes=0)(batch["rgbd"],(h // h_downsample, w // w_downsample, 4), "nearest")
-    
-#     # normalize rgbd image
-#     rgbd_normalized = jax.vmap(normalize_rgbd, 0)(rgbd)
-    
-#     # crop rgbd image about pick location
-#     rgbd_crop = jax.vmap(crop_rgbd, (0, 0), 0)(rgbd, pick_pixels)
-#     rgbd_crop_normalized = jax.vmap(normalize_rgbd, 0)(rgbd_crop)
-
-#     return (rgbd, rgbd_crop), (rgbd_normalized, rgbd_normalized), (pick_pixels, place_pixels), (pick_ids, place_ids)
-
 
 @partial(jax.jit, static_argnums=(4,))
 def preprocess_transporter(rgb, depth, pick_pixels, place_pixels, crop_idx):

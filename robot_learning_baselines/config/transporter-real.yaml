@@ -1,0 +1,41 @@
+project:
+  base_path: /home/peter/Code/temp/robot_learning_baselines
+
+hf_upload:
+  entity: "peterdavidfagan"
+  repo: "transporter_networks"
+  branch: "main"
+  checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}"
+  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/30"
+  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/30"
+
+wandb:
+  use: True
+  project: "robot_learning_baselines"
+  entity: "peterdavidfagan"
+  experiment_name: transporter-debug
+  tags: ["debugging transporter pipeline"]
+  notes: "Debugging transporter training pipeline."
+  resume: False
+
+  dataset_visualization:
+    columns:
+      rgb: "image"
+      depth: "image"
+      rgb_crop: "image"
+      depth_crop: "image"
+      pick_target: "image"
+      place_target: "image"
+  
+  prediction_visualization:
+    columns:
+      pick_target: "image"
+      place_target: "image"
+      pick_heatmap: "image"
+      place_heatmap: "image"
+
+defaults:
+  - architecture/transporter: transporter
+  - dataset: transporter-real
+  - evaluation: transporter
+  - training: transporter

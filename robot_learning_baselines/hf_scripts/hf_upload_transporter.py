@@ -133,8 +133,6 @@ def main(cfg: DictConfig) -> None:
     inspect_model(place_model, {"params": place_model_key}, data)
 
     # load checkpoints
-    pick_train_restored = pick_chkpt_manager.restore(150)
-    place_train_restored = place_chkpt_manager.restore(150)
     pick_train_state = pick_chkpt_manager.restore(cfg.hf_upload.pick_checkpoint_dir, items=pick_train_state)
     place_train_state = place_chkpt_manager.restore(cfg.hf_upload.place_checkpoint_dir, items=place_train_state)
     

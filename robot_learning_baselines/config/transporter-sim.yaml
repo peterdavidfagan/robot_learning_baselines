@@ -3,16 +3,16 @@ project:
 
 hf_upload:
   entity: "peterdavidfagan"
-  repo: "transporter_networks"
+  repo: "transporter_networks_mujoco"
   branch: "main"
   checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}"
-  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/150"
-  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/150"
+  pick_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_pick/30"
+  place_checkpoint_dir: "${config.project.base_path}/.checkpoints/${config.wandb.experiment_name}/transporter_place/30"
 
 wandb:
   use: True
   project: "robot_learning_baselines"
-  entity: "ipab-rad"
+  entity: "peterdavidfagan"
   experiment_name: transporter-debug
   tags: ["debugging transporter pipeline"]
   notes: "Debugging transporter training pipeline."
@@ -36,6 +36,6 @@ wandb:
 
 defaults:
   - architecture/transporter: transporter
-  - dataset: debug-transporter
+  - dataset: transporter-sim
   - evaluation: transporter
   - training: transporter
