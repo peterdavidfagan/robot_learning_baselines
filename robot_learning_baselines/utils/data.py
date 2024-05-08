@@ -45,18 +45,18 @@ def load_hf_transporter_dataset(cfg):
     # download data from huggingface
     DOWNLOAD_PATH="/tmp/transporter_dataset"
     COMPRESSED_FILENAME="data.tar.xz"
-    hf_hub_download(
-        repo_id="peterdavidfagan/transporter_networks",
-        repo_type="dataset",
-        filename="data.tar.xz",
-        local_dir=DOWNLOAD_PATH,
-    )
+    for file in cfg["huggingface"]["files"]:
+        hf_hub_download(
+            repo_id=f"{cfg['huggingface']['entity']}/{cfg['huggingface']['repo']}",
+            repo_type="dataset",
+            filename=file,
+            local_dir=DOWNLOAD_PATH,
+        )
 
-    # uncompress file
-    COMPRESSED_FILEPATH=os.path.join(DOWNLOAD_PATH, COMPRESSED_FILENAME)
-    with tarfile.open(COMPRESSED_FILEPATH, 'r:xz') as tar:
-        tar.extractall(path=DOWNLOAD_PATH)
-    os.remove(COMPRESSED_FILEPATH)
+        COMPRESSED_FILEPATH=os.path.join(DOWNLOAD_PATH, file)
+        with tarfile.open(COMPRESSED_FILEPATH, 'r:xz') as tar:
+            tar.extractall(path=DOWNLOAD_PATH)
+        os.remove(COMPRESSED_FILEPATH)
 
     # load with tfds
     ds = tfds.builder_from_directory(DOWNLOAD_PATH).as_dataset(split="train")
@@ -306,8 +306,6 @@ def preprocess_transporter(rgb, depth, pick_pixels, place_pixels, crop_idx):
 
     return  (rgbd_crop_raw, rgbd_pick_crop_raw), (rgbd_crop, rgbd_pick_crop), (pick_pixels, place_pixels), (pick_id, place_id)
 
-# hardcoded crop_idx for the huggingface dataset from Edinburgh University RAD Lab.
-preprocess_transporter_batch = jax.jit(jax.vmap(partial(preprocess_transporter, crop_idx=(220, 395, 580, 755)), in_axes=(0, 0, 0, 0)))
 
 def preprocess_batch(batch, text_tokenize_fn, action_head_type="diffusion", dummy=False):
     """

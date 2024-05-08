@@ -4,6 +4,7 @@
 import os
 from time import time
 from tqdm import tqdm
+from functools import partial
 
 # linear algebra and deep learning frameworks
 import numpy as np 
@@ -16,7 +17,6 @@ import optax
 
 # dataset
 import tensorflow_datasets as tfds
-from envlogger import reader
 
 # model architecture
 from transporter_networks.transporter import (
@@ -38,8 +38,8 @@ import wandb
 
 # custom training pipeline utilities
 from utils.data import (
-    load_transporter_dataset,
-    preprocess_transporter_batch,
+    load_hf_transporter_dataset,
+    preprocess_transporter,
 )
 
 from utils.pipeline import (
@@ -62,16 +62,33 @@ def main(cfg: DictConfig) -> None:
     assert jax.default_backend() != "cpu" # ensure accelerator is available
     cfg = cfg["config"] # some hacky and wacky stuff from hydra (TODO: revise)
 
+    # precompile data preprocessing based on config
+    crop = cfg.dataset.crop
+    preprocess_transporter_batch = jax.jit(
+        jax.vmap(
+            partial(
+                preprocess_transporter, 
+                crop_idx=(crop["v_min"], crop["u_min"], crop["v_max"], crop["u_max"])), 
+                in_axes=(0, 0, 0, 0)
+                )
+            )
+
+
     key = random.PRNGKey(0)
     pick_model_key, place_model_key = jax.random.split(key, 2)
     
-    train_data = load_transporter_dataset(cfg.dataset)
+    train_data = load_hf_transporter_dataset(cfg.dataset)
     cardinality =  train_data.reduce(0, lambda x,_: x+1).numpy()
 
     if cfg.wandb.use:
         init_wandb(cfg)
         batch = next(train_data.as_numpy_iterator())
-        (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
+        (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(
+            jnp.asarray(batch['pick_rgb']), 
+            jnp.asarray(batch['pick_depth']), 
+            jnp.asarray(batch['pick_pixel_coords']), 
+            jnp.asarray(batch['place_pixel_coords']),
+            )
         batch = {
                 "rgbd": rgbd,
                 "rgbd_crop": rgbd_crop,
@@ -90,7 +107,12 @@ def main(cfg: DictConfig) -> None:
    
 
     batch = next(train_data.as_numpy_iterator())
-    (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
+    (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch( 
+            jnp.asarray(batch['pick_rgb']), 
+            jnp.asarray(batch['pick_depth']), 
+            jnp.asarray(batch['pick_pixel_coords']), 
+            jnp.asarray(batch['place_pixel_coords'])
+            )
     eval_data = {
             "rgbd": rgbd,
             "rgbd_crop": rgbd_crop,
@@ -132,19 +154,26 @@ def main(cfg: DictConfig) -> None:
         }
 
         # shuffle dataset
-        train_data = train_data.shuffle(10)
-        train_data_iter = train_data.as_numpy_iterator()
+        train_data_epoch = train_data.shuffle(16)
         
         # TODO: get dataset size and use tqdm
-        for batch in tqdm(train_data_iter, leave=False, total=cardinality):
-            (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch(batch)
-            
+        for batch in tqdm(train_data_epoch, leave=False, total=cardinality):
+            (rgbd, rgbd_crop), (rgbd_normalized, rgbd_crop_normalized), pixels, ids = preprocess_transporter_batch( 
+                jnp.asarray(batch['pick_rgb']), 
+                jnp.asarray(batch['pick_depth']), 
+                jnp.asarray(batch['pick_pixel_coords']), 
+                jnp.asarray(batch['place_pixel_coords']),
+                )
+
             # compute ce loss for pick network and update pick network
-            pick_train_state, pick_loss = pick_train_step(transporter.pick_model_state, rgbd_normalized, ids[0])
+            pick_train_state, pick_loss, pick_success_rate = pick_train_step(
+                    transporter.pick_model_state, 
+                    rgbd_normalized, 
+                    ids[0])
             transporter = transporter.replace(pick_model_state=pick_train_state) 
-            
+
             # compute ce loss for place networks and update place network
-            place_train_state, place_loss = place_train_step(
+            place_train_state, place_loss, place_success_rate = place_train_step(
                     transporter.place_model_state,
                     rgbd_normalized,
                     rgbd_crop_normalized, 
@@ -154,14 +183,15 @@ def main(cfg: DictConfig) -> None:
             
 
         # report epoch metrics (optionally add to wandb)
-        pick_loss_epoch = transporter.pick_model_state.metrics.compute()
-        place_loss_epoch = transporter.place_model_state.metrics.compute()
-        print(f"Epoch {epoch}: pick_loss: {pick_loss_epoch}, place_loss: {place_loss_epoch}")
+        pick_metrics = transporter.pick_model_state.metrics.compute()
+        place_metrics = transporter.place_model_state.metrics.compute()
         
-        if cfg.wandb.use:
+        if cfg.wandb.use and (epoch%5==0):
             wandb.log({
-                "pick_loss": pick_loss_epoch,
-                "place_loss": place_loss_epoch,
+                "pick_train_loss": pick_metrics["loss"],
+                "place_train_loss": place_metrics["loss"],
+                "pick_train_success_rate": pick_metrics["success_rate"],
+                "place_train_success_rate":place_metrics["success_rate"],
                 "epoch": epoch
                 })
             visualize_transporter_predictions(cfg, transporter, eval_data, epoch)
@@ -169,6 +199,11 @@ def main(cfg: DictConfig) -> None:
         # reset metrics after epoch
         transporter.pick_model_state.replace(metrics=pick_train_state.metrics.empty())
         transporter.place_model_state.replace(metrics=place_train_state.metrics.empty())
+
+        # save model checkpoint
+        pick_chkpt_manager.save(epoch, pick_train_state)
+        place_chkpt_manager.save(epoch, place_train_state)
+
 
 
 if __name__ == "__main__":

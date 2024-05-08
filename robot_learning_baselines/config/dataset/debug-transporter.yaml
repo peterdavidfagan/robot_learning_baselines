@@ -3,3 +3,19 @@ tfds_data_dir: /media/peter/400cb321-2b54-4ffc-a661-2d49ca87dfaf/transporter_dat
 shuffle_buffer_size: 10
 batch_size: ${config.training.transporter_pick.batch_size}
 
+huggingface:
+  entity: peterdavidfagan
+  repo: transporter_networks_mujoco
+  files:
+    - colour_splitter_2024-05-08-12:35:43.tar.gz
+    #- data.tar.xz
+  
+crop:
+  u_min: 0
+  u_max: 640
+  v_min: 0
+  v_max: 480
+  # u_min: 395
+  # u_max: 755
+  # v_min: 220
+  # v_max: 580
