@@ -13,7 +13,7 @@ wandb:
   use: True
   project: "robot_learning_baselines"
   entity: "peterdavidfagan"
-  experiment_name: transporter-debug
+  experiment_name: transporter-real
   tags: ["debugging transporter pipeline"]
   notes: "Debugging transporter training pipeline."
   resume: False
